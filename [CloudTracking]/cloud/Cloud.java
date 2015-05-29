@@ -1,7 +1,5 @@
 package cloud;
 
-import java.util.Vector;
-
 public class Cloud {
 	
 	private int x,y,width,height;
@@ -18,12 +16,12 @@ public class Cloud {
 	}
 	
 
-	public Vector computeCenterDistance(Cloud ref){
+	public Vec2 computeCenterDistance(Cloud corr){
 				
-		int vecX = ref.getX() - this.getX();
-		int vecY = ref.getY() - this.getY();
+		int vecX = corr.getX() - this.getX();
+		int vecY = corr.getY() - this.getY();
 		
-		return new Vector(vecX, vecY);	
+		return new Vec2(vecX, vecY);	
 	
 	}
 	
@@ -31,9 +29,9 @@ public class Cloud {
 	//Noch zu überdenken: Schwelle für übereinstimmende Größen (Variable thresh)
 	
 	
-	public boolean findMatchingCloud(Cloud ref){
+	public boolean findMatchingCloud(Cloud corr){
 		
-		if(Math.abs(ref.getHeight() - this.getHeight()) <= thresh && Math.abs(ref.getWidth() - this.getWidth()) <= thresh)
+		if(Math.abs(corr.getHeight() - this.getHeight()) <= thresh && Math.abs(corr.getWidth() - this.getWidth()) <= thresh)
 			return true;
 		
 		else 
@@ -86,4 +84,3 @@ public class Cloud {
 
 	
 }
-# CloudTracking
