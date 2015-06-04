@@ -17,7 +17,7 @@ public class Binarisierung {
 			for(int j = 0; j < HSBArray[i].length; j++){
 				
 				//Testen auf nicht Himmel (Wolke)
-				 if(HSBArray[i][j][0] < 180 || HSBArray[i][j][0] > 280){
+				 if(HSBArray[i][j][1] < 0.3){
 					 binaryPicture[i][j] = true;
 				 }
 			}

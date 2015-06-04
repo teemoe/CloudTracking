@@ -15,6 +15,7 @@ public class RGBToHSB {
 				
 				//Konvertierung in den HSB Farbarum
 				HSBArray[i][j] = Color.RGBtoHSB(RGBArray[i][j].getRed(), RGBArray[i][j].getGreen(), RGBArray[i][j].getBlue(), HSBArray[i][j]);
+				HSBArray[i][j][0] = 360.0f * HSBArray[i][j][0];
 			}
 		}
 		return HSBArray;
