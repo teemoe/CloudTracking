@@ -1,15 +1,19 @@
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-
-import cloud.*;
-import ij.*;
+import ij.ImagePlus;
+import ij.ImageStack;
 import ij.measure.ResultsTable;
 import ij.plugin.FolderOpener;
 import ij.plugin.PlugIn;
 import ij.plugin.filter.Analyzer;
 import ij.process.ImageProcessor;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import cloud.Cloud;
+import cloud.CloudPair;
+import cloud.Vec2;
 
 public class CloudTracking_ implements PlugIn {
 
