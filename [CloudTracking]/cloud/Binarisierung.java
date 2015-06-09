@@ -15,13 +15,13 @@ public class Binarisierung {
 	 * @param HSBArray
 	 * @return
 	 */
-	public static void binaryPicture(ImageProcessor proc) {
+	public static ImageProcessor binaryPicture(ImageProcessor proc) {
 
 		Image image = proc.createImage();
 
 		// Cast von Image in BufferedImage
 		BufferedImage img = (BufferedImage) image;
-		
+
 		// Erzeugen des ColorArray
 		Color[][] colorImage = new Color[img.getWidth()][img.getHeight()];
 
@@ -33,26 +33,28 @@ public class Binarisierung {
 				int green = (colorAsInt & 0x0000ff00) >> 8;
 				int blue = colorAsInt & 0x000000ff;
 
-				colorImage[j][i] = new Color(red, green, blue);
+				colorImage[i][j] = new Color(red, green, blue);
 			}
 		}
-		
+
 		float[][][] HSBArray = RGBToHSB.pixelArray(colorImage);
 
-		
-		//Binarisierung
+		// Binarisierung
 		for (int i = 0; i < HSBArray.length; i++) {
 			for (int j = 0; j < HSBArray[i].length; j++) {
 
 				// Testen auf nicht Himmel (Wolke)
 				if (HSBArray[i][j][1] < 0.3) {
-					
-					proc.putPixel(i, j, 255);
-				} else {
 
+					System.out.println("weiß");
+					proc.putPixel(i, j, -1);
+				} else {
+					System.out.println("schwarz");
 					proc.putPixel(i, j, 0);
 				}
 			}
 		}
+
+		return proc;
 	}
 }
