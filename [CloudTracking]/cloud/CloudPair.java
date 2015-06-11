@@ -1,5 +1,7 @@
 package cloud;
 
+
+
 public class CloudPair {
 	
 	private Cloud reference;
@@ -142,8 +144,8 @@ public class CloudPair {
 	
 	public String determineVectorDirection(){
 		
-		if(motionVec.getX() == 0 && motionVec.getY() < 0)
-			vecDirection = "North";
+		if(motionVec.getX() == 0 && motionVec.getY() < 0)  // If else benutzen, da schneller  (es müssen nicht alle Fälle geprüft werden)
+			vecDirection = "North";						   // Enumeration beutzen --> schneller
 
 		if(motionVec.getX() > 0 && motionVec.getY() < 0)
 			vecDirection = "NorthEast";		

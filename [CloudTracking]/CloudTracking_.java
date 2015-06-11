@@ -4,10 +4,9 @@ import ij.measure.ResultsTable;
 import ij.plugin.FolderOpener;
 import ij.plugin.PlugIn;
 import ij.plugin.filter.Analyzer;
+import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -16,7 +15,6 @@ import java.util.Queue;
 import cloud.Binarisierung;
 import cloud.Cloud;
 import cloud.CloudPair;
-import cloud.RGBToHSB;
 import cloud.Vec2;
 
 public class CloudTracking_ implements PlugIn {
@@ -45,8 +43,14 @@ public class CloudTracking_ implements PlugIn {
 
 		while (numOfIteration > 0) {
 
-			ImageStack cloudStack = loadImagesIntoStack();	//TODO: ist das nicht unperformant? wie viele bilder werden denn mit jeder iteration geladen?			
-			
+			ImageStack cloudStack = loadImagesIntoStack(); // TODO: ist das
+															// nicht
+															// unperformant? wie
+															// viele bilder
+															// werden denn mit
+															// jeder iteration
+															// geladen?
+
 			// an dieser Stelle erfolgt die Binarisierung des Stacks
 			makeBinaryStack(cloudStack);
 
@@ -54,12 +58,10 @@ public class CloudTracking_ implements PlugIn {
 			// extrahiert
 			ref = cloudStack.getProcessor(1);
 			corr = cloudStack.getProcessor(2);
-			
-			//Ausgabe des binarisierten Bildes
+
+			// Ausgabe des binarisierten Bildes
 			new ImagePlus("ref", ref).show();
 			new ImagePlus("corr", corr).show();
-			
-			
 
 			// Für die Bewegungsprognose wird aus dem vorherigen Durchlauf der
 			// jeweilige Vektor und die Richtung aus der ResultsTable ausgelesen
@@ -126,6 +128,7 @@ public class CloudTracking_ implements PlugIn {
 
 			numOfIteration++;
 
+			
 			// Hier wird die Aufnahme der Kamera simuliert
 			try {
 				Thread.sleep(3000);
@@ -147,169 +150,270 @@ public class CloudTracking_ implements PlugIn {
 
 	private void makeBinaryStack(ImageStack cloudStack) {
 
-		Binarisierung.binaryPicture(cloudStack.getProcessor(1));
-		Binarisierung.binaryPicture(cloudStack.getProcessor(2));
+		cloudStack.setProcessor(
+				Binarisierung.binaryPicture(cloudStack.getProcessor(1)), 1);
+		cloudStack.setProcessor(
+				Binarisierung.binaryPicture(cloudStack.getProcessor(2)), 2);
 	}
 
-	private ArrayList<Cloud> findBorders(ImageProcessor binary) {
-
-		binary.autoThreshold();
+	private ArrayList<Cloud> findBorders(ImageProcessor binary){
 
 		ArrayList<Cloud> cloudList = new ArrayList<Cloud>();
-
+		
 		int white = -1;
-		int width = binary.getWidth();
-		int height = binary.getHeight();
-
-		byte[] pixels = (byte[]) binary.getPixels();
-
+		int widthP = binary.getWidth();
+		int heightP = binary.getHeight();
+		byte counter=10;
+		
+		new ImagePlus("",binary).show();
+		
+		
+		int [] pixels = (int[]) binary.getPixels();
+		
 		int length = pixels.length;
-
-		boolean[] marker = new boolean[pixels.length];
-
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				if (pixels[y * width + x] == white
-						&& marker[y * width + x] == false) {
-
-					int[] xy = { x, y };
-
+		
+		boolean [] marker = new boolean[pixels.length];
+		byte [] show = new byte[length];
+		
+		
+		ArrayList <int[]> fifo = new ArrayList<int[]>();
+		
+		
+		for(int y = 0; y < heightP; y++ ){
+			for(int x = 0; x < widthP; x++){
+				
+				if(pixels[y*widthP + x] == white && !marker[y*widthP + x]){
+					
+					int[] xy={x,y};
+					
 					int centerX = 0, centerY = 0, cloudWidth = 0, cloudHeight = 0;
 					int minX = x, minY = y, maxX = x, maxY = y;
-
-					Queue<int[]> fifo = new LinkedList();
+					
+					
 					fifo.add(xy);
-
-					while (fifo.isEmpty() == false) {
-
-						int[] coordXY = fifo.poll();
-
-						if (coordXY[1] * width + coordXY[0] - 1 > 0) {
-
-							if (pixels[coordXY[1] * width + coordXY[0] - 1] == white
-									&& marker[coordXY[1] * width + coordXY[0]
-											- 1] == false) {
-
-								int[] xyL = { coordXY[0] - 1, coordXY[1] };
+					
+					marker[y * widthP + x] = true;
+					show[y * widthP + x] = counter;
+					
+					while(!fifo.isEmpty()){
+						
+						int [] coordXY = fifo.remove(fifo.size()-1);
+								
+								
+						if(coordXY[1] * widthP + coordXY[0] - 1 > 0 && coordXY[1] % widthP != 0){
+						
+							if(pixels[coordXY[1] * widthP + coordXY[0] - 1] == white && !marker[coordXY[1] * widthP + coordXY[0] - 1]){
+							
+								int[] xyL={coordXY[0] - 1,coordXY[1]};
 								fifo.add(xyL);
-								if (xyL[0] < minX)
-									minX = xyL[0];
-
-								marker[coordXY[1] * width + coordXY[0]] = true;
-							}
-
+								if(xyL[0]<minX)
+									minX=xyL[0];
+								
+								marker[coordXY[1] * widthP + coordXY[0]] = true;
+								show[coordXY[1] * widthP + coordXY[0]] = counter;
+								}
+							 
+							 
 						}
-
-						if (coordXY[1] * width + coordXY[0] + 1 < length) {
-
-							if (pixels[coordXY[1] * width + coordXY[0] + 1] == white
-									&& marker[coordXY[1] * width + coordXY[0]
-											+ 1] == false) {
-
-								int[] xyR = { coordXY[0] + 1, coordXY[1] };
+						
+						if(coordXY[1] * widthP + coordXY[0] + 1 < length && coordXY[1] % widthP != (widthP-1)){
+						
+							if(pixels[coordXY[1] * widthP + coordXY[0] + 1]== white && !marker[coordXY[1] * widthP + coordXY[0] + 1]){
+							
+								int[] xyR={coordXY[0] + 1, coordXY[1]};
 								fifo.add(xyR);
-								if (xyR[0] > maxX)
-									maxX = xyR[0];
-
-								marker[coordXY[1] * width + coordXY[0]] = true;
-							}
+								if(xyR[0]>maxX)
+									maxX=xyR[0];
+								
+								marker[coordXY[1] * widthP + coordXY[0]] = true;
+								show[coordXY[1] * widthP + coordXY[0]] = counter;
+								}
 						}
-
-						if ((coordXY[1] - 1) * width + coordXY[0] > 0) {
-
-							if (pixels[(coordXY[1] - 1) * width + coordXY[0]] == white
-									&& marker[(coordXY[1] - 1) * width
-											+ coordXY[0]] == false) {
-
-								int[] xyO = { coordXY[0], coordXY[1] - 1 };
+						
+						if((coordXY[1] - 1) * widthP + coordXY[0] > 0 && coordXY[0] != 0){
+						
+							if(pixels[(coordXY[1]-1) * widthP + coordXY[0]] == white && !marker[(coordXY[1]-1) * widthP + coordXY[0]]){
+							
+								int[] xyO={coordXY[0],coordXY[1]-1};
 								fifo.add(xyO);
-								if (xyO[1] * width < minY)
-									minY = xyO[1];
-
-								marker[coordXY[1] * width + coordXY[0]] = true;
-							}
+								if(xyO[1] * widthP < minY)
+									minY=xyO[1];
+							
+								marker[coordXY[1] * widthP + coordXY[0]] = true;
+								show[coordXY[1] * widthP + coordXY[0]] = counter;
+								}
 						}
-
-						if ((coordXY[1] + 1) * width + coordXY[0] < length) {
-
-							if (pixels[(coordXY[1] + 1) * width + coordXY[0]] == white
-									&& marker[(coordXY[1] + 1) * width
-											+ coordXY[0]] == false) {
-
-								int[] xyU = { coordXY[0], coordXY[1] + 1 };
+						
+						
+						if((coordXY[1] + 1) * widthP + coordXY[0] < length && coordXY[0] != (heightP-1)){
+							
+							if(pixels[(coordXY[1]+1) * widthP + coordXY[0]] == white && !marker[(coordXY[1]+1) * widthP + coordXY[0]]){
+								
+								int[] xyU={coordXY[0],coordXY[1]+1};
 								fifo.add(xyU);
-								if (xyU[1] * width > maxY)
-									maxY = xyU[1];
-
-								marker[coordXY[1] * width + coordXY[0]] = true;
-							}
+								if(xyU[1]* widthP >maxY)
+									maxY=xyU[1];
+								
+								marker[coordXY[1] * widthP + coordXY[0]] = true;
+								show[coordXY[1] * widthP + coordXY[0]] = counter;
+								}
 						}
+					
+					
+					}//end while
+					
+					centerX=minX + (maxX-minX)/2;
+					centerY= minY + (maxY-minY)/2;
+					cloudWidth=maxX-minX;
+					cloudHeight=maxY-minY;
+					
+					Cloud tmp = new Cloud(centerX,centerY,cloudWidth,cloudHeight);
 
-					}
-
-					centerX = minX + (maxX - minX) / 2;
-					centerY = minY + (maxY - minY) / 2;
-					cloudWidth = maxX - minX;
-					cloudHeight = maxY - minY;
-
-					Cloud tmp = new Cloud(centerX, centerY, cloudWidth,
-							cloudHeight);
-
-					if (tmp.getHeight() != 0 && tmp.getWidth() != 0) {
+					if(tmp.getHeight() != 0 && tmp.getWidth() != 0){
 						cloudList.add(tmp);
 					}
-				}
-			}
-		}
-
+					
+					counter+=10; //>128 ausschließen
+					
+				}//end for
+			}//end for
+			
+			
+		}//end find borders
+		
+		//resultat anzeigen
+		
+		ByteProcessor ip= new ByteProcessor(widthP,heightP, show);
+		new ImagePlus("",ip).show();
+		
 		return cloudList;
 	}
-
-	private ArrayList<CloudPair> findCloudPairs(ArrayList<Cloud> referenceList,
-			ArrayList<Cloud> correspondenceList) {
-
-		ArrayList<CloudPair> pairs = new ArrayList<CloudPair>();
-
-		for (int i = 0; i < referenceList.size(); i++) {
-
-			Cloud ref = referenceList.get(i);
-			for (int j = 0; j < correspondenceList.size(); j++) {
-
-				Cloud corr = correspondenceList.get(j);
-				if (ref.findMatchingCloud(corr)) {
-
-					Vec2 tmp = ref.computeCenterDistance(corr);
-
-					CloudPair pairTmp = new CloudPair(ref, corr, tmp,
-							numOfIteration);
-					pairs.add(pairTmp);
-				}
-			}
+	
+	//auf punkte aus results zugreifen
+	private ArrayList<Cloud> tracking (ArrayList<Cloud> corr, ImageProcessor binary){
+		
+		
+		ArrayList<Cloud> cloudList = new ArrayList<Cloud>();
+		
+		int white = -1;
+		int widthP = binary.getWidth();
+		int heightP = binary.getHeight();
+		byte counter=10;
+	
+		byte [] pixels = (byte[]) binary.getPixels();
+		byte [] show = new byte[widthP*heightP];
+		
+		// int length = pixels.length();
+				
+		
+		// durchlaufe alle wolken
+		while (corr.size()!=0){
+		
+		Cloud c= corr.remove(corr.size()-1); //poll
+				
+		int height=c.getHeight();
+		int width=c.getWidth();
+		int x=c.getX();
+		int y=c.getY();
+		
+		// spätere randpunkte
+		int minX=x, minY=y, maxX=x, maxY=y;
+		
+		// laufvariablen
+		int xl=x, xr=x, yu=y, yo=y;
+		
+		// teste wie lange vom mittelpunkt der alten wolke in jede richtung gegangen werden kann
+		while(pixels[y*widthP+xl]==white && pixels[y*widthP+xl]>0 && y*widthP+xl%widthP != 0){
+			xl=xl-1;
+			minX=xl;
+			show[y*widthP+xl]=counter;
 		}
-		return pairs;
+		
+		while(pixels[y*widthP+xr]==white && pixels[y*widthP+xr]<widthP-1 && y*widthP+xr != (widthP-1)){
+			xr=xr+1;
+			maxX=xr;
+			show[y*widthP+xr]=counter;
+		}
+		
+		while(pixels[yo*widthP+x]==white && pixels[y*widthP+xr]>0 && yo*widthP+x != 0){
+			yo=yo-1;
+			minY=yo;
+			show[yo*widthP+x]=counter;
+		}
+		
+		while(pixels[yu*widthP+x]==white && pixels[y*widthP+xr]<heightP-1 && yu*widthP+x != (widthP-1)){
+			yu=yu+1;
+			maxY=yu;
+			show[yu*widthP+x]=counter;
+		}
+		
+		//neue wolke
+		x=(minX+maxX)/2;
+		y=(minY+maxY)/2;
+		width=maxX-minX;
+		height=maxY-minY;
+		
+		Cloud cn=new Cloud(x,y,width,height);
+		
+		cloudList.add(cn);
+		
+		} // ende while
+		
+		//bild anzeigen lassen:
+		
+		
+		
+		new ImagePlus().show();
+
+		return cloudList;
+		
+	} // ende tracking
+
+
+// sorge dafÃŒr, dass cloud in cor- und ref- liste an gleicher stelle liegen! 
+	
+	private ArrayList<CloudPair> findCloudPairs(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
+	
+		ArrayList<CloudPair> pairs = new ArrayList<CloudPair>();
+		
+		for(int i = 0; i < referenceList.size(); i++){
+			
+			Cloud ref = referenceList.get(i);
+			for(int j = 0; j < correspondenceList.size(); j++){
+				
+				Cloud corr = correspondenceList.get(j);
+				if(ref.findMatchingCloud(corr)){
+					
+					Vec2 tmp = ref.computeCenterDistance(corr);
+					
+					CloudPair pairTmp = new CloudPair(ref, corr, tmp, numOfIteration);
+					pairs.add(pairTmp);		
+				}
+			}	
+		}
+		return pairs;	
 	}
-
-	private void prepareNextIteration() {
+	
+	private void prepareNextIteration(){ //fäält weg
 		// unix-shell command
-		commandDelete = "rm " + dirWorkFolder + "/" + filename + numOfIteration
-				+ ending;
-
-		// Vorerst werden Bilder aus einem externen Ordner geladen,
-		// in einer spÃ¤teren Umsetzung liefert hier die Kamera Bilder
-
-		commandLoad = "mv " + dirImgRepo + "/" + filename
-				+ (numOfIteration + 2) + ending;
-
+		commandDelete = "rm " + dirWorkFolder + "/" + filename + numOfIteration +  ending;	
+		
+		// Vorerst werden Bilder aus einem externen Ordner geladen, 
+		// in einer spÃ€teren Umsetzung liefert hier die Kamera Bilder
+		
+		commandLoad = "mv " + dirImgRepo + "/" + filename + (numOfIteration + 2) + ending;
+		
 		try {
 			p = Runtime.getRuntime().exec(commandDelete);
 			p = Runtime.getRuntime().exec(commandLoad);
 			System.out.println(commandDelete);
 			System.out.println(commandLoad);
-
+			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 
 	}
 
