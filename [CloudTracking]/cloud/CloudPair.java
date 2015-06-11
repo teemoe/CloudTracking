@@ -168,7 +168,10 @@ public class CloudPair {
 		if(motionVec.getX() < 0 && motionVec.getY() < 0)
 			vecDirection = "NorthWest";
 		
-		return vecDirection;
+		if(motionVec.getX() == 0 && motionVec.getY() == 0)
+			vecDirection = "Central";
+		
+		return vecDirection == null ? "" : vecDirection;
 	}
 
 	public Cloud getReference() {
