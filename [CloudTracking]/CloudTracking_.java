@@ -1,161 +1,170 @@
-import ij.ImagePlus;
-import ij.ImageStack;
+import java.io.File;
+import java.util.ArrayList;
+import binary.Binarisierung;
+import cloud.*;
+import ij.*;
 import ij.measure.ResultsTable;
-import ij.plugin.FolderOpener;
 import ij.plugin.PlugIn;
 import ij.plugin.filter.Analyzer;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-
-import cloud.Binarisierung;
-import cloud.Cloud;
-import cloud.CloudPair;
-import cloud.Vec2;
-
 public class CloudTracking_ implements PlugIn {
 
-	private FolderOpener opener;
-	private ImagePlus clouds;
-
+	
 	private ImageProcessor ref;
 	private ImageProcessor corr;
-	private String dirWorkFolder = "./cloudFolder";
-	private String dirImgRepo = "./cloudImgRepo";
-	private String filename = "cloud0";
-	private String ending = ".png";
-	private String commandDelete;
-	private String commandLoad;
-	private int counter;
+	
+	private String dir = ""; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
+	private String name = "cloud";
+	private String format = ".jpg";
+	
 	private ArrayList<Cloud> referenceList;
 	private ArrayList<Cloud> correspondenceList;
-	private ArrayList<CloudPair> pairList;
-	private ResultsTable results;
-
-	private Process p;
+	private ArrayList<CloudPair> pairListPrevious;		// wichtig fürs Tracking
+	private ArrayList<CloudPair> pairListCurrent;
+	
+	
+	private int numberOfImagesToProcess = new File(dir).listFiles().length - 1 ;
 	private int numOfIteration = 1;
-
+	
 	public void run(String arg) {
 
-		while (numOfIteration > 0) {
+		System.out.println(numberOfImagesToProcess);
 
-			ImageStack cloudStack = loadImagesIntoStack(); // TODO: ist das
-															// nicht
-															// unperformant? wie
-															// viele bilder
-															// werden denn mit
-															// jeder iteration
-															// geladen?
+	while(numOfIteration < numberOfImagesToProcess / 2){	
+		
+		
+		ImageStack cloudStack = loadImages();
+		
+		//Anzeige des CloudStacks
+		//ImagePlus imgToShow = new ImagePlus("CloudStack No. " + numOfIteration, cloudStack);
+		//imgToShow.show();
 
-			// an dieser Stelle erfolgt die Binarisierung des Stacks
-			makeBinaryStack(cloudStack);
+		
+		// an dieser Stelle erfolgt die Binarisierung des Stacks
+		makeBinaryStack(cloudStack);
+		
+		
+		// aus dem Stack wird das Referenzbild sowie das Korrespondenzbild extrahiert
+		ref = cloudStack.getProcessor(1);
+		corr = cloudStack.getProcessor(2);
+		
+		
+		// Ausgabe des binarisierten Bildes
+		//new ImagePlus("ref", ref).show();
+		//new ImagePlus("corr", corr).show();
+		
+		
+		// Wenn keine Bewegungsprognose aus der vorherigen Iteration vorhanden ist bzw. gleich Null ist,
+		// wird die findBorders-Methode aufgerufen, welche jeweils eine List mit Cloud-Objekten zurück gibt.
+		referenceList = findBorders(ref);
+		correspondenceList = findBorders(corr);
 
-			// aus dem Stack wird das Referenzbild sowie das Korrespondenzbild
-			// extrahiert
-			ref = cloudStack.getProcessor(1);
-			corr = cloudStack.getProcessor(2);
-
-			// Ausgabe des binarisierten Bildes
-			new ImagePlus("ref", ref).show();
-			new ImagePlus("corr", corr).show();
-
-			// F�r die Bewegungsprognose wird aus dem vorherigen Durchlauf der
-			// jeweilige Vektor und die Richtung aus der ResultsTable ausgelesen
-
-			// Wenn keine Bewegungsprognose aus der vorherigen Iteration
-			// vorhanden ist bzw. gleich Null ist,
-			// wird die findBorders-Methode aufgerufen, welche jeweils eine List
-			// mit Cloud-Objekten zur�ck gibt.
-			referenceList = findBorders(ref);
-			correspondenceList = findBorders(corr);
-
-			// Wenn eine Prognose aus dem vorherigen Durchlauf vorhanden ist,
-			// dann wir das Tracking durchgeführt.
-			// Tracking
-
-			pairList = findCloudPairs(referenceList, correspondenceList);
-
-			// Der ResultsTable wird am Ende des Durchlaufs die Wolke inkl.
-			// Prognose hinzugefügt und innerhalb von ImageJ als Auflistung
-			// angezeigt
-			// welche Methode hierzu benutzt wird, ist noch unklar, vielleicht
-			// muss diese noch implementiert werden
-
-			ResultsTable rt = Analyzer.getResultsTable();
-			if (rt == null) {
-				rt = new ResultsTable();
-				Analyzer.setResultsTable(rt);
-			}
-
-			for (int i = 0; i < pairList.size(); i++) {
-
-				rt.incrementCounter();
-
-				rt.addValue("NumberOfIteration", numOfIteration);
-				rt.addValue("CloudNumber", -1);
-				rt.addValue("Time until Sun is reached (sec)", pairList.get(i)
-						.timeUntilSunIsReached(30, 30));
-				rt.addValue("Cloud velocity (pix per sec)", pairList.get(i)
-						.calculateVelocity());
-				rt.addValue("Reference Cloud Height", pairList.get(i)
-						.getReference().getHeight());
-				rt.addValue("Reference Cloud Width", pairList.get(i)
-						.getReference().getWidth());
-				rt.addValue("Reference Cloud Center_X", pairList.get(i)
-						.getReference().getX());
-				rt.addValue("Reference Cloud Center_Y", pairList.get(i)
-						.getReference().getY());
-				rt.addValue("Correspondence Cloud Height", pairList.get(i)
-						.getCorrespondence().getHeight());
-				rt.addValue("Correspondence Cloud Width", pairList.get(i)
-						.getCorrespondence().getWidth());
-				rt.addValue("Correspondence Cloud Center_X", pairList.get(i)
-						.getCorrespondence().getX());
-				rt.addValue("Correspondence Cloud Center_Y", pairList.get(i)
-						.getCorrespondence().getY());
-
-			}
-
-			rt.show("Results");
-
-			// Die folgende Methode bereitet das Verzeichnis für den nächsten
-			// Durchlauf vor
-			// prepareNextIteration();
-
-			numOfIteration++;
-
-			
-			// Hier wird die Aufnahme der Kamera simuliert
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException ex) {
-				Thread.currentThread().interrupt();
-			}
-
+		
+		// Wenn eine Prognose aus dem vorherigen Durchlauf vorhanden ist, dann wir das Tracking durchgeführt.
+		// Tracking
+		
+		pairListCurrent = findCloudPairs(referenceList, correspondenceList);
+		
+		
+		// Zeige den Bewegungsvektor im Referenz- bzw. Korrespondenzbild
+		
+//		for(int i = 0; i < pairListCurrent.size(); i++){
+//			pairListCurrent.get(i).showVec(ref);
+//		}
+		
+		// Der ResultsTable wird am Ende des Durchlaufs die Wolke inkl. Prognose hinzugefügt und innerhalb von ImageJ als Auflistung angezeigt
+		// welche Methode hierzu benutzt wird, ist noch unklar, vielleicht muss diese noch implementiert werden
+		
+		
+		ResultsTable rt = Analyzer.getResultsTable();
+		if (rt == null) {
+		        rt = new ResultsTable();
+		        Analyzer.setResultsTable(rt);
 		}
+		
+		for (int i = 0; i < pairListCurrent.size(); i++){
+			
+		rt.incrementCounter();
+		
+		rt.addValue("NumberOfIteration", numOfIteration);
+		rt.addValue("CloudNumber", -1);
+		rt.addValue("Time until Sun is reached (sec)", pairListCurrent.get(i).timeUntilSunIsReached(30, 30));
+		rt.addValue("Cloud velocity (pix per sec)", pairListCurrent.get(i).calculateVelocity());
+		rt.addValue("Reference Cloud Height", pairListCurrent.get(i).getReference().getHeight());
+		rt.addValue("Reference Cloud Width", pairListCurrent.get(i).getReference().getWidth());
+		rt.addValue("Reference Cloud Center_X", pairListCurrent.get(i).getReference().getX());
+		rt.addValue("Reference Cloud Center_Y", pairListCurrent.get(i).getReference().getY());
+		rt.addValue("Correspondence Cloud Height", pairListCurrent.get(i).getCorrespondence().getHeight());
+		rt.addValue("Correspondence Cloud Width", pairListCurrent.get(i).getCorrespondence().getWidth());
+		rt.addValue("Correspondence Cloud Center_X", pairListCurrent.get(i).getCorrespondence().getX());
+		rt.addValue("Correspondence Cloud Center_Y", pairListCurrent.get(i).getCorrespondence().getY());
+		
+		}
+		
+		rt.show("Results");
+		
+		// Die folgende Methode bereitet das Verzeichnis für den nächsten Durchlauf vor
+		//prepareNextIteration();
+		
+		numOfIteration++;
+		pairListPrevious = pairListCurrent;
+		
+		
+		// Hier wird die Aufnahme der Kamera simuliert
+		try {
+			Thread.sleep(3000);
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+		
 	}
-
-	private ImageStack loadImagesIntoStack() {
-
-		opener = new FolderOpener();
-		clouds = new ImagePlus();
-		clouds = opener.openFolder(dirWorkFolder);
-
-		return clouds.getImageStack();
 	}
-
-	private void makeBinaryStack(ImageStack cloudStack) {
-
+	
+	private ImageStack loadImages(){
+		
+		String fileNameNumberRef = new String();
+		String fileNameNumberCorr = new String();
+		
+		if(numOfIteration < 10){
+			fileNameNumberRef = "000" + numOfIteration;
+			fileNameNumberCorr = "000" + (numOfIteration + 1);
+		}
+		if(numOfIteration >= 10 && numOfIteration < 100){
+			fileNameNumberRef = "00" + numOfIteration;
+			fileNameNumberCorr = "00" + (numOfIteration + 1);
+		}
+		if(numOfIteration >= 100 && numOfIteration < 1000){
+			fileNameNumberRef = "0" + numOfIteration;
+			fileNameNumberCorr = "0" + (numOfIteration + 1);
+		}
+		if(numOfIteration >= 1000){
+			fileNameNumberRef = String.valueOf(numOfIteration);
+			fileNameNumberCorr = String.valueOf(numOfIteration + 1);
+		}
+		
+		ImagePlus ref = new ImagePlus(dir + name + fileNameNumberRef + format);
+		ImagePlus corr = new ImagePlus(dir + name + (fileNameNumberCorr) + format);
+		ImageStack tmp = ImageStack.create(ref.getWidth(), ref.getHeight(), 2, ref.getBitDepth());
+		
+		
+		tmp.setPixels(ref.getProcessor().getPixels(),1);
+		tmp.setPixels(corr.getProcessor().getPixels(),2);
+		
+		return tmp;
+		
+		
+	}
+		
+	private void makeBinaryStack(ImageStack cloudStack){
+		
 		cloudStack.setProcessor(
 				Binarisierung.binaryPicture(cloudStack.getProcessor(1)), 1);
 		cloudStack.setProcessor(
-				Binarisierung.binaryPicture(cloudStack.getProcessor(2)), 2);
+				Binarisierung.binaryPicture(cloudStack.getProcessor(2)), 2);		
 	}
-
+	
 	private ArrayList<Cloud> findBorders(ImageProcessor binary){
 
 		ArrayList<Cloud> cloudList = new ArrayList<Cloud>();
@@ -166,8 +175,7 @@ public class CloudTracking_ implements PlugIn {
 		byte counter=10;
 		
 		new ImagePlus("",binary).show();
-		
-		
+	
 		int [] pixels = (int[]) binary.getPixels();
 		
 		int length = pixels.length;
@@ -273,7 +281,7 @@ public class CloudTracking_ implements PlugIn {
 						cloudList.add(tmp);
 					}
 					
-					counter+=10; //>128 ausschlie�en
+					counter+=10; //>128 ausschließen
 					
 				}//end for
 			}//end for
@@ -288,89 +296,6 @@ public class CloudTracking_ implements PlugIn {
 		
 		return cloudList;
 	}
-	
-	//auf punkte aus results zugreifen
-	private ArrayList<Cloud> tracking (ArrayList<Cloud> corr, ImageProcessor binary){
-		
-		
-		ArrayList<Cloud> cloudList = new ArrayList<Cloud>();
-		
-		int white = -1;
-		int widthP = binary.getWidth();
-		int heightP = binary.getHeight();
-		byte counter=10;
-	
-		byte [] pixels = (byte[]) binary.getPixels();
-		byte [] show = new byte[widthP*heightP];
-		
-		// int length = pixels.length();
-				
-		
-		// durchlaufe alle wolken
-		while (corr.size()!=0){
-		
-		Cloud c= corr.remove(corr.size()-1); //poll
-				
-		int height=c.getHeight();
-		int width=c.getWidth();
-		int x=c.getX();
-		int y=c.getY();
-		
-		// sp�tere randpunkte
-		int minX=x, minY=y, maxX=x, maxY=y;
-		
-		// laufvariablen
-		int xl=x, xr=x, yu=y, yo=y;
-		
-		// teste wie lange vom mittelpunkt der alten wolke in jede richtung gegangen werden kann
-		while(pixels[y*widthP+xl]==white && pixels[y*widthP+xl]>0 && y*widthP+xl%widthP != 0){
-			xl=xl-1;
-			minX=xl;
-			show[y*widthP+xl]=counter;
-		}
-		
-		while(pixels[y*widthP+xr]==white && pixels[y*widthP+xr]<widthP-1 && y*widthP+xr != (widthP-1)){
-			xr=xr+1;
-			maxX=xr;
-			show[y*widthP+xr]=counter;
-		}
-		
-		while(pixels[yo*widthP+x]==white && pixels[y*widthP+xr]>0 && yo*widthP+x != 0){
-			yo=yo-1;
-			minY=yo;
-			show[yo*widthP+x]=counter;
-		}
-		
-		while(pixels[yu*widthP+x]==white && pixels[y*widthP+xr]<heightP-1 && yu*widthP+x != (widthP-1)){
-			yu=yu+1;
-			maxY=yu;
-			show[yu*widthP+x]=counter;
-		}
-		
-		//neue wolke
-		x=(minX+maxX)/2;
-		y=(minY+maxY)/2;
-		width=maxX-minX;
-		height=maxY-minY;
-		
-		Cloud cn=new Cloud(x,y,width,height);
-		
-		cloudList.add(cn);
-		
-		} // ende while
-		
-		//bild anzeigen lassen:
-		
-		
-		
-		new ImagePlus().show();
-
-		return cloudList;
-		
-	} // ende tracking
-
-
-// sorge dafÌr, dass cloud in cor- und ref- liste an gleicher stelle liegen! 
 	
 	private ArrayList<CloudPair> findCloudPairs(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
 	
@@ -387,34 +312,13 @@ public class CloudTracking_ implements PlugIn {
 					Vec2 tmp = ref.computeCenterDistance(corr);
 					
 					CloudPair pairTmp = new CloudPair(ref, corr, tmp, numOfIteration);
-					pairs.add(pairTmp);		
+					pairs.add(pairTmp);
 				}
 			}	
 		}
 		return pairs;	
 	}
 	
-	private void prepareNextIteration(){ //f��lt weg
-		// unix-shell command
-		commandDelete = "rm " + dirWorkFolder + "/" + filename + numOfIteration +  ending;	
-		
-		// Vorerst werden Bilder aus einem externen Ordner geladen, 
-		// in einer spÀteren Umsetzung liefert hier die Kamera Bilder
-		
-		commandLoad = "mv " + dirImgRepo + "/" + filename + (numOfIteration + 2) + ending;
-		
-		try {
-			p = Runtime.getRuntime().exec(commandDelete);
-			p = Runtime.getRuntime().exec(commandLoad);
-			System.out.println(commandDelete);
-			System.out.println(commandLoad);
-			
-		} catch (IOException e) {
-		// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 
-	}
 
 }

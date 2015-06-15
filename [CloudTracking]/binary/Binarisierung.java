@@ -1,4 +1,4 @@
-package cloud;
+package binary;
 
 import ij.process.ImageProcessor;
 
@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 public class Binarisierung {
 
 	/**
-	 * Erzeugen eines Binärbildes mit true = weiß --> Wolke und false = schwarz
+	 * Erzeugen eines Binâ€°rbildes mit true = weiï¬‚ --> Wolke und false = schwarz
 	 * --> Himmel
 	 * 
 	 * @param HSBArray
@@ -46,10 +46,10 @@ public class Binarisierung {
 				// Testen auf nicht Himmel (Wolke)
 				if (HSBArray[i][j][1] < 0.3) {
 
-					System.out.println("weiß");
+					//System.out.println("weiï¬‚");
 					proc.putPixel(i, j, -1);
 				} else {
-					System.out.println("schwarz");
+					//System.out.println("schwarz");
 					proc.putPixel(i, j, 0);
 				}
 			}

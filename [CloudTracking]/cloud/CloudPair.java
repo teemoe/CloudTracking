@@ -1,6 +1,12 @@
 package cloud;
 
+import java.awt.Color;
 
+import ij.ImagePlus;
+import ij.gui.Arrow;
+import ij.gui.Overlay;
+import ij.gui.Roi;
+import ij.process.ImageProcessor;
 
 public class CloudPair {
 	
@@ -41,111 +47,128 @@ public class CloudPair {
 		double deltaY;
 		double distance;
 		
+		if (velocity != 0.0){
 		
-		if(vecDirection.equals("North")){
+			if(vecDirection.equals("North")){
+			
+				yStart = correspondence.getY() - correspondence.getHeight() / 2;
+				
+				distance = yStart;
+				
+				return distance / velocity;
+			}
+			
+			if(vecDirection.equals("NorthEast")){
+				
+				alpha = Math.abs(motionVec.getY() / motionVec.getX());
+				
+				xStart = correspondence.getX();
+				yStart = correspondence.getY();
+				
+				deltaX = picWidth - xStart;
+				
+				deltaY = alpha * deltaX;
+				
+				distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+				
+				return distance / velocity;
+			}
+			
+			if(vecDirection.equals("East")){
+				
+				xStart = correspondence.getX() + correspondence.getWidth() / 2;
+				distance = picWidth - xStart;
+				
+				return distance/velocity;
+			}
+			if(vecDirection.equals("SouthEast")){
 		
-			yStart = correspondence.getY() - correspondence.getHeight() / 2;
-			
-			distance = yStart;
-			
-			return distance / velocity;
-		}
+				alpha = Math.abs(motionVec.getX() / motionVec.getY());
+				
+				xStart = correspondence.getX();
+				yStart = correspondence.getY();
+				
+				deltaX = picWidth - xStart;
+				
+				deltaY = alpha * deltaX;
+				
+				distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+				
+				return distance / velocity;
+			}
+			if(vecDirection.equals("South")){
+				
+				yStart = correspondence.getY() + correspondence.getHeight() / 2;
+				
+				distance = picHeight - yStart;
+				
+				return distance / velocity;
+			}
+			if(vecDirection.equals("SouthWest")){
+				
+				alpha = Math.abs(motionVec.getY() / motionVec.getX());
+				
+				xStart = correspondence.getX();
+				yStart = correspondence.getY();
+				
+				deltaX = xStart;
+				
+				
+				deltaY = alpha * deltaX;
+				
+				distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+				
+				return distance / velocity;
+			}
+			if(vecDirection.equals("West")){
+				
+				xStart = correspondence.getX() - correspondence.getWidth() / 2;
+				distance = xStart;
+				
+				return distance/velocity;
+			}
+			if(vecDirection.equals("NorthWest")){
 		
-		if(vecDirection.equals("NorthEast")){
-			
-			alpha = Math.abs(motionVec.getY() / motionVec.getX());
-			
-			xStart = correspondence.getX();
-			yStart = correspondence.getY();
-			
-			deltaX = picWidth - xStart;
-			
-			deltaY = alpha * deltaX;
-			
-			distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-			
-			return distance / velocity;
-		}
+				alpha = Math.abs(motionVec.getX() / motionVec.getY());
+				
+				xStart = correspondence.getX();
+				yStart = correspondence.getY();
+				
+				deltaX = xStart;
+				
+				deltaY = alpha * deltaX;
+				
+				distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+				
+				return distance / velocity;
 		
-		if(vecDirection.equals("East")){
-			
-			xStart = correspondence.getX() + correspondence.getWidth() / 2;
-			distance = picWidth - xStart;
-			
-			return distance/velocity;
-		}
-		if(vecDirection.equals("SouthEast")){
-
-			alpha = Math.abs(motionVec.getX() / motionVec.getY());
-			
-			xStart = correspondence.getX();
-			yStart = correspondence.getY();
-			
-			deltaX = picWidth - xStart;
-			
-			deltaY = alpha * deltaX;
-			
-			distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-			
-			return distance / velocity;
-		}
-		if(vecDirection.equals("South")){
-			
-			yStart = correspondence.getY() + correspondence.getHeight() / 2;
-			
-			distance = picHeight - yStart;
-			
-			return distance / velocity;
-		}
-		if(vecDirection.equals("SouthWest")){
-			
-			alpha = Math.abs(motionVec.getY() / motionVec.getX());
-			
-			xStart = correspondence.getX();
-			yStart = correspondence.getY();
-			
-			deltaX = xStart;
-			
-			
-			deltaY = alpha * deltaX;
-			
-			distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-			
-			return distance / velocity;
-		}
-		if(vecDirection.equals("West")){
-			
-			xStart = correspondence.getX() - correspondence.getWidth() / 2;
-			distance = xStart;
-			
-			return distance/velocity;
-		}
-		if(vecDirection.equals("NorthWest")){
-
-			alpha = Math.abs(motionVec.getX() / motionVec.getY());
-			
-			xStart = correspondence.getX();
-			yStart = correspondence.getY();
-			
-			deltaX = xStart;
-			
-			deltaY = alpha * deltaX;
-			
-			distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-			
-			return distance / velocity;
-
+			}
+		
 		}
 
-		else 
-			return 0;
+			return 0.;
 	
+	}
+	
+	public void showVec(ImageProcessor ip){
+		
+		if(vecDirection != null){
+			
+			ImagePlus imgPl = new ImagePlus("Vector added", ip);
+			Overlay overlay = new Overlay();
+			Roi roi = new Arrow(reference.getX(), reference.getY(), correspondence.getX(), correspondence.getY());
+			Color c = new Color(255,0,255);
+			overlay.setStrokeColor(c);
+			imgPl.setOverlay(overlay);	
+			imgPl.setRoi(roi, true);
+			imgPl.show();		
+		}		
 	}
 	
 	public String determineVectorDirection(){
 		
-		if(motionVec.getX() == 0 && motionVec.getY() < 0)  // If else benutzen, da schneller  (es müssen nicht alle Fälle geprüft werden)
-			vecDirection = "North";						   // Enumeration beutzen --> schneller
+		if(motionVec.getX() == 0 && motionVec.getY() < 0)
+			vecDirection = "North";
 
 		if(motionVec.getX() > 0 && motionVec.getY() < 0)
 			vecDirection = "NorthEast";		
@@ -168,10 +191,7 @@ public class CloudPair {
 		if(motionVec.getX() < 0 && motionVec.getY() < 0)
 			vecDirection = "NorthWest";
 		
-		if(motionVec.getX() == 0 && motionVec.getY() == 0)
-			vecDirection = "Central";
-		
-		return vecDirection == null ? "" : vecDirection;
+		return vecDirection;
 	}
 
 	public Cloud getReference() {
