@@ -1,6 +1,9 @@
 import java.io.File;
 import java.util.ArrayList;
+
+import tracking.Tracking;
 import binary.Binarisierung;
+import binary.Erosion;
 import cloud.*;
 import ij.*;
 import ij.measure.ResultsTable;
@@ -17,12 +20,13 @@ public class CloudTracking_ implements PlugIn {
 	
 	private String dir = ""; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
 	private String name = "cloud";
-	private String format = ".jpg";
+	private String format = ".png";
 	
 	private ArrayList<Cloud> referenceList;
 	private ArrayList<Cloud> correspondenceList;
 	private ArrayList<CloudPair> pairListPrevious;		// wichtig fürs Tracking
 	private ArrayList<CloudPair> pairListCurrent;
+	private ArrayList<Cloud> correspondenceListPrevious;
 	
 	
 	private int numberOfImagesToProcess = new File(dir).listFiles().length - 1 ;
@@ -30,9 +34,10 @@ public class CloudTracking_ implements PlugIn {
 	
 	public void run(String arg) {
 
-		System.out.println(numberOfImagesToProcess);
+		//Ueberpruefung der Bildanzahl im Ordner
+		//System.out.println(numberOfImagesToProcess);
 
-	while(numOfIteration < numberOfImagesToProcess / 2){	
+	while(numOfIteration <= numberOfImagesToProcess - 1){	
 		
 		
 		ImageStack cloudStack = loadImages();
@@ -44,6 +49,9 @@ public class CloudTracking_ implements PlugIn {
 		
 		// an dieser Stelle erfolgt die Binarisierung des Stacks
 		makeBinaryStack(cloudStack);
+		
+		// anschließend erodieren
+		//erodeBinaryStack(cloudStack);
 		
 		
 		// aus dem Stack wird das Referenzbild sowie das Korrespondenzbild extrahiert
@@ -58,21 +66,29 @@ public class CloudTracking_ implements PlugIn {
 		
 		// Wenn keine Bewegungsprognose aus der vorherigen Iteration vorhanden ist bzw. gleich Null ist,
 		// wird die findBorders-Methode aufgerufen, welche jeweils eine List mit Cloud-Objekten zurück gibt.
-		referenceList = findBorders(ref);
-		correspondenceList = findBorders(corr);
-
+		if(pairListPrevious == null || pairListPrevious.size() == 0 || correspondenceListPrevious == null || correspondenceListPrevious.size() == 0){
 		
-		// Wenn eine Prognose aus dem vorherigen Durchlauf vorhanden ist, dann wir das Tracking durchgeführt.
-		// Tracking
+		referenceList = Tracking.startTracking(ref, numOfIteration);
+		correspondenceList = Tracking.startTracking(corr, numOfIteration);
+		}
+		
+		// Wenn Prognosen/Referenzdaten aus dem vorherigen Durchlauf vorhanden sind, dann wir das Tracking durchgeführt.
+		else{
+					
+			referenceList = correspondenceListPrevious;
+			correspondenceList = Tracking.Tracking(pairListPrevious, corr, numOfIteration);
+			//System.out.println("Das Tracking wurde benutzt");
+		}
+		
 		
 		pairListCurrent = findCloudPairs(referenceList, correspondenceList);
 		
 		
 		// Zeige den Bewegungsvektor im Referenz- bzw. Korrespondenzbild
 		
-//		for(int i = 0; i < pairListCurrent.size(); i++){
-//			pairListCurrent.get(i).showVec(ref);
-//		}
+		for(int i = 0; i < pairListCurrent.size(); i++){
+			pairListCurrent.get(i).showVec(ref);
+		}
 		
 		// Der ResultsTable wird am Ende des Durchlaufs die Wolke inkl. Prognose hinzugefügt und innerhalb von ImageJ als Auflistung angezeigt
 		// welche Methode hierzu benutzt wird, ist noch unklar, vielleicht muss diese noch implementiert werden
@@ -89,7 +105,7 @@ public class CloudTracking_ implements PlugIn {
 		rt.incrementCounter();
 		
 		rt.addValue("NumberOfIteration", numOfIteration);
-		rt.addValue("CloudNumber", -1);
+		rt.addValue("CloudNumber", pairListCurrent.get(i).getCorrespondence().getCloudNumberInPicture());
 		rt.addValue("Time until Sun is reached (sec)", pairListCurrent.get(i).timeUntilSunIsReached(30, 30));
 		rt.addValue("Cloud velocity (pix per sec)", pairListCurrent.get(i).calculateVelocity());
 		rt.addValue("Reference Cloud Height", pairListCurrent.get(i).getReference().getHeight());
@@ -110,6 +126,7 @@ public class CloudTracking_ implements PlugIn {
 		
 		numOfIteration++;
 		pairListPrevious = pairListCurrent;
+		correspondenceListPrevious = correspondenceList;
 		
 		
 		// Hier wird die Aufnahme der Kamera simuliert
@@ -165,137 +182,6 @@ public class CloudTracking_ implements PlugIn {
 				Binarisierung.binaryPicture(cloudStack.getProcessor(2)), 2);		
 	}
 	
-	private ArrayList<Cloud> findBorders(ImageProcessor binary){
-
-		ArrayList<Cloud> cloudList = new ArrayList<Cloud>();
-		
-		int white = -1;
-		int widthP = binary.getWidth();
-		int heightP = binary.getHeight();
-		byte counter=10;
-		
-		new ImagePlus("",binary).show();
-	
-		int [] pixels = (int[]) binary.getPixels();
-		
-		int length = pixels.length;
-		
-		boolean [] marker = new boolean[pixels.length];
-		byte [] show = new byte[length];
-		
-		
-		ArrayList <int[]> fifo = new ArrayList<int[]>();
-		
-		
-		for(int y = 0; y < heightP; y++ ){
-			for(int x = 0; x < widthP; x++){
-				
-				if(pixels[y*widthP + x] == white && !marker[y*widthP + x]){
-					
-					int[] xy={x,y};
-					
-					int centerX = 0, centerY = 0, cloudWidth = 0, cloudHeight = 0;
-					int minX = x, minY = y, maxX = x, maxY = y;
-					
-					
-					fifo.add(xy);
-					
-					marker[y * widthP + x] = true;
-					show[y * widthP + x] = counter;
-					
-					while(!fifo.isEmpty()){
-						
-						int [] coordXY = fifo.remove(fifo.size()-1);
-								
-								
-						if(coordXY[1] * widthP + coordXY[0] - 1 > 0 && coordXY[1] % widthP != 0){
-						
-							if(pixels[coordXY[1] * widthP + coordXY[0] - 1] == white && !marker[coordXY[1] * widthP + coordXY[0] - 1]){
-							
-								int[] xyL={coordXY[0] - 1,coordXY[1]};
-								fifo.add(xyL);
-								if(xyL[0]<minX)
-									minX=xyL[0];
-								
-								marker[coordXY[1] * widthP + coordXY[0]] = true;
-								show[coordXY[1] * widthP + coordXY[0]] = counter;
-								}
-							 
-							 
-						}
-						
-						if(coordXY[1] * widthP + coordXY[0] + 1 < length && coordXY[1] % widthP != (widthP-1)){
-						
-							if(pixels[coordXY[1] * widthP + coordXY[0] + 1]== white && !marker[coordXY[1] * widthP + coordXY[0] + 1]){
-							
-								int[] xyR={coordXY[0] + 1, coordXY[1]};
-								fifo.add(xyR);
-								if(xyR[0]>maxX)
-									maxX=xyR[0];
-								
-								marker[coordXY[1] * widthP + coordXY[0]] = true;
-								show[coordXY[1] * widthP + coordXY[0]] = counter;
-								}
-						}
-						
-						if((coordXY[1] - 1) * widthP + coordXY[0] > 0 && coordXY[0] != 0){
-						
-							if(pixels[(coordXY[1]-1) * widthP + coordXY[0]] == white && !marker[(coordXY[1]-1) * widthP + coordXY[0]]){
-							
-								int[] xyO={coordXY[0],coordXY[1]-1};
-								fifo.add(xyO);
-								if(xyO[1] * widthP < minY)
-									minY=xyO[1];
-							
-								marker[coordXY[1] * widthP + coordXY[0]] = true;
-								show[coordXY[1] * widthP + coordXY[0]] = counter;
-								}
-						}
-						
-						
-						if((coordXY[1] + 1) * widthP + coordXY[0] < length && coordXY[0] != (heightP-1)){
-							
-							if(pixels[(coordXY[1]+1) * widthP + coordXY[0]] == white && !marker[(coordXY[1]+1) * widthP + coordXY[0]]){
-								
-								int[] xyU={coordXY[0],coordXY[1]+1};
-								fifo.add(xyU);
-								if(xyU[1]* widthP >maxY)
-									maxY=xyU[1];
-								
-								marker[coordXY[1] * widthP + coordXY[0]] = true;
-								show[coordXY[1] * widthP + coordXY[0]] = counter;
-								}
-						}
-					
-					
-					}//end while
-					
-					centerX=minX + (maxX-minX)/2;
-					centerY= minY + (maxY-minY)/2;
-					cloudWidth=maxX-minX;
-					cloudHeight=maxY-minY;
-					
-					Cloud tmp = new Cloud(centerX,centerY,cloudWidth,cloudHeight);
-
-					if(tmp.getHeight() != 0 && tmp.getWidth() != 0){
-						cloudList.add(tmp);
-					}
-					
-					counter+=10; //>128 ausschließen
-					
-				}//end for
-			}//end for
-			
-			
-		}//end find borders
-		
-		//resultat anzeigen
-		
-		ByteProcessor ip= new ByteProcessor(widthP,heightP, show);
-		new ImagePlus("",ip).show();
-		
-		return cloudList;
-	}
 	
 	private ArrayList<CloudPair> findCloudPairs(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
 	
@@ -311,6 +197,9 @@ public class CloudTracking_ implements PlugIn {
 					
 					Vec2 tmp = ref.computeCenterDistance(corr);
 					
+					//System.out.println(tmp.getX());
+					//System.out.println(tmp.getY());
+					
 					CloudPair pairTmp = new CloudPair(ref, corr, tmp, numOfIteration);
 					pairs.add(pairTmp);
 				}
@@ -319,6 +208,10 @@ public class CloudTracking_ implements PlugIn {
 		return pairs;	
 	}
 	
-
+	
+	private void erodeBinaryStack(ImageStack cloudStack){
+		Erosion.erode(cloudStack.getProcessor(1));
+		Erosion.erode(cloudStack.getProcessor(1));
+		}
 
 }

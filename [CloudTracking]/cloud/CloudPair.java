@@ -157,8 +157,9 @@ public class CloudPair {
 			ImagePlus imgPl = new ImagePlus("Vector added", ip);
 			Overlay overlay = new Overlay();
 			Roi roi = new Arrow(reference.getX(), reference.getY(), correspondence.getX(), correspondence.getY());
-			Color c = new Color(255,0,255);
-			overlay.setStrokeColor(c);
+			//Color c = new Color(Color.YELLOW);
+			roi.setColor(Color.RED);
+			//overlay.setStrokeColor(Color.YELLOW);
 			imgPl.setOverlay(overlay);	
 			imgPl.setRoi(roi, true);
 			imgPl.show();		

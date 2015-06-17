@@ -2,19 +2,51 @@ package cloud;
 
 public class Cloud {
 	
-	private int x,y,width,height;
+	private int x,y,width,height,numberOfIteration,cloudNumberInPicture;
 	
 	//Threshold fürs matching
 	private int thresh = 3;
 	 
-	public Cloud(int x, int y, int width, int height) {
+	public Cloud(int x, int y, int width, int height, int iter, int num) {
 
 		this.x=x;
 		this.y=y;
 		this.width = width;
 		this.height = height;
+		this.numberOfIteration = iter;
+		this.cloudNumberInPicture = num;
 	}
 	
+
+	public int getNumberOfIteration() {
+		return numberOfIteration;
+	}
+
+
+	public void setNumberOfIteration(int numberOfIteration) {
+		this.numberOfIteration = numberOfIteration;
+	}
+
+
+	public int getCloudNumberInPicture() {
+		return cloudNumberInPicture;
+	}
+
+
+	public void setCloudNumberInPicture(int cloudNumberInPicture) {
+		this.cloudNumberInPicture = cloudNumberInPicture;
+	}
+
+
+	public int getThresh() {
+		return thresh;
+	}
+
+
+	public void setThresh(int thresh) {
+		this.thresh = thresh;
+	}
+
 
 	public Vec2 computeCenterDistance(Cloud corr){
 				
