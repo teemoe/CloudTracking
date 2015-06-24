@@ -1,6 +1,6 @@
 package cloud;
 
-public class Cloud {
+public class Cloud implements Comparable<Cloud> {
 	
 	private int x,y,width,height,numberOfIteration,cloudNumberInPicture;
 	
