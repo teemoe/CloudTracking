@@ -102,6 +102,28 @@ public class Cloud {
 	}
 
 
+//vergleich nach fläche; 
+	public int compareTo(Cloud other) {
+		
+//		if(this.height*this.width > other.height*other.width)
+//			return 1;
+//		
+//		else if (this.height*this.width < other.height*other.width)
+//			return -1;
+//			
+//		else 	
+//			return 0;
+		
+		return this.height*this.width - other.height*other.width;
+	}
+	
+//berechnet abstand zweier wolken
+	public double getDist(Cloud other){
+		Vec2 v=new Vec2(this.getX()-other.getX(),this.getY()-other.getY());
+		double dist=v.computeVectorLength();
+		return dist;
+	}
+
 
 	
 }
