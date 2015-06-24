@@ -1,7 +1,6 @@
 package tracking;
 
 import ij.ImagePlus;
-import ij.measure.ResultsTable;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
@@ -45,8 +44,6 @@ public class Tracking {
 			int heightBottom = 0;
 			int widthLeft = 0;
 			int widthRight = 0;
-			int cloudNumber = correspondence.getCloudNumberInPicture();
-			
 			
 			// Pruefe, ob das geschätzte neue Zentrum der Wolke innerhalb des Bildes liegt
 			if(corrCenterX + dirX + corrCenterY + dirY * binWidth >= 0 && corrCenterX + dirX + corrCenterY + dirY * binWidth < length){
@@ -128,7 +125,7 @@ public class Tracking {
 					int tmpWidth = Math.abs(widthLeft) + Math.abs(widthRight);
 					int tmpHeight = Math.abs(heightTop) + Math.abs(heightBottom);
 					
-					Cloud toAdd = new Cloud(estimatedCenterX, estimatedCenterY, tmpWidth, tmpHeight,numOfIteration,cloudNumber);
+					Cloud toAdd = new Cloud(estimatedCenterX, estimatedCenterY, tmpWidth, tmpHeight,numOfIteration);
 					currentCorrespondence.add(toAdd);
 				}
 				
@@ -276,7 +273,7 @@ public class Tracking {
 					cloudWidth=maxX-minX;
 					cloudHeight=maxY-minY;
 					
-					Cloud tmp = new Cloud(centerX,centerY,cloudWidth,cloudHeight, numOfIteration, nC);
+					Cloud tmp = new Cloud(centerX,centerY,cloudWidth,cloudHeight, numOfIteration);
 					//Cloud tmp = new Cloud(centerX,centerY,cloudWidth,cloudHeight,nC);
 
 					if(tmp.getHeight() != 0 && tmp.getWidth() != 0){

@@ -11,7 +11,7 @@ public class BinaryTester_ implements PlugIn {
 	private ImageProcessor ref;
 	private ImageProcessor corr;
 	
-	private String dir = "/Users/boelf/Desktop/manyClouds/";
+	private String dir = "/Users/boelf/Desktop/combinationIII/";
 	private String name = "cloud";
 	private String format = ".jpg";
 	private int numOfIteration = 1;

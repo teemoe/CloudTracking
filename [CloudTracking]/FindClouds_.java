@@ -201,7 +201,7 @@ public class FindClouds_ implements PlugIn {
 					cloudWidth=maxX-minX;
 					cloudHeight=maxY-minY;
 					
-					Cloud tmp = new Cloud(centerX,centerY,cloudWidth,cloudHeight,0,0);
+					Cloud tmp = new Cloud(centerX,centerY,cloudWidth,cloudHeight,0);
 
 					if(tmp.getHeight() != 0 && tmp.getWidth() != 0){
 						cloudList.add(tmp);

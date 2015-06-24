@@ -7,45 +7,17 @@ public class Cloud {
 	//Threshold fürs matching
 	private int thresh = 3;
 	 
-	public Cloud(int x, int y, int width, int height, int iter, int num) {
+	public Cloud(int x, int y, int width, int height, int iter) {
 
 		this.x=x;
 		this.y=y;
 		this.width = width;
 		this.height = height;
 		this.numberOfIteration = iter;
-		this.cloudNumberInPicture = num;
+
 	}
 	
 
-	public int getNumberOfIteration() {
-		return numberOfIteration;
-	}
-
-
-	public void setNumberOfIteration(int numberOfIteration) {
-		this.numberOfIteration = numberOfIteration;
-	}
-
-
-	public int getCloudNumberInPicture() {
-		return cloudNumberInPicture;
-	}
-
-
-	public void setCloudNumberInPicture(int cloudNumberInPicture) {
-		this.cloudNumberInPicture = cloudNumberInPicture;
-	}
-
-
-	public int getThresh() {
-		return thresh;
-	}
-
-
-	public void setThresh(int thresh) {
-		this.thresh = thresh;
-	}
 
 
 	public Vec2 computeCenterDistance(Cloud corr){
@@ -70,10 +42,7 @@ public class Cloud {
 			return false;
 		
 	}
-	
-	
-	
-	
+		
 	public int getX() {
 		return x;
 	}
@@ -112,6 +81,26 @@ public class Cloud {
 	public void setHeight(int height) {
 		this.height = height;
 	}
+	
+	public int getNumberOfIteration() {
+		return numberOfIteration;
+	}
+
+
+	public void setNumberOfIteration(int numberOfIteration) {
+		this.numberOfIteration = numberOfIteration;
+	}
+
+
+	public int getThresh() {
+		return thresh;
+	}
+
+
+	public void setThresh(int thresh) {
+		this.thresh = thresh;
+	}
+
 
 
 	

@@ -9,7 +9,6 @@ import ij.*;
 import ij.measure.ResultsTable;
 import ij.plugin.PlugIn;
 import ij.plugin.filter.Analyzer;
-import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
 public class CloudTracking_ implements PlugIn {
@@ -20,7 +19,7 @@ public class CloudTracking_ implements PlugIn {
 	
 	private String dir = ""; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
 	private String name = "cloud";
-	private String format = ".png";
+	private String format = ".jpg";
 	
 	private ArrayList<Cloud> referenceList;
 	private ArrayList<Cloud> correspondenceList;
@@ -38,7 +37,6 @@ public class CloudTracking_ implements PlugIn {
 		//System.out.println(numberOfImagesToProcess);
 
 	while(numOfIteration <= numberOfImagesToProcess - 1){	
-		
 		
 		ImageStack cloudStack = loadImages();
 		
@@ -105,7 +103,6 @@ public class CloudTracking_ implements PlugIn {
 		rt.incrementCounter();
 		
 		rt.addValue("NumberOfIteration", numOfIteration);
-		rt.addValue("CloudNumber", pairListCurrent.get(i).getCorrespondence().getCloudNumberInPicture());
 		rt.addValue("Time until Sun is reached (sec)", pairListCurrent.get(i).timeUntilSunIsReached(30, 30));
 		rt.addValue("Cloud velocity (pix per sec)", pairListCurrent.get(i).calculateVelocity());
 		rt.addValue("Reference Cloud Height", pairListCurrent.get(i).getReference().getHeight());
@@ -139,6 +136,9 @@ public class CloudTracking_ implements PlugIn {
 	}
 	}
 	
+	
+	
+	
 	private ImageStack loadImages(){
 		
 		String fileNameNumberRef = new String();
@@ -169,9 +169,7 @@ public class CloudTracking_ implements PlugIn {
 		tmp.setPixels(ref.getProcessor().getPixels(),1);
 		tmp.setPixels(corr.getProcessor().getPixels(),2);
 		
-		return tmp;
-		
-		
+		return tmp;	
 	}
 		
 	private void makeBinaryStack(ImageStack cloudStack){
@@ -182,6 +180,10 @@ public class CloudTracking_ implements PlugIn {
 				Binarisierung.binaryPicture(cloudStack.getProcessor(2)), 2);		
 	}
 	
+	private void erodeBinaryStack(ImageStack cloudStack){
+		Erosion.erode(cloudStack.getProcessor(1));
+		Erosion.erode(cloudStack.getProcessor(1));
+	}
 	
 	private ArrayList<CloudPair> findCloudPairs(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
 	
@@ -209,9 +211,6 @@ public class CloudTracking_ implements PlugIn {
 	}
 	
 	
-	private void erodeBinaryStack(ImageStack cloudStack){
-		Erosion.erode(cloudStack.getProcessor(1));
-		Erosion.erode(cloudStack.getProcessor(1));
-		}
+
 
 }

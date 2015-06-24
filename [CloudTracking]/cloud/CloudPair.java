@@ -1,7 +1,6 @@
 package cloud;
 
 import java.awt.Color;
-
 import ij.ImagePlus;
 import ij.gui.Arrow;
 import ij.gui.Overlay;
@@ -194,6 +193,8 @@ public class CloudPair {
 		
 		return vecDirection;
 	}
+	
+	
 
 	public Cloud getReference() {
 		return reference;
