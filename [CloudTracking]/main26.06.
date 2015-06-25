@@ -2,10 +2,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-//import binary.Binarisierung;
-
 import tracking.Tracking;
-//import tracking.startTracking;
 //import binary.Binarisierung;
 //import binary.Erosion;
 import cloud.*;
@@ -21,7 +18,7 @@ public class CloudTracking_ implements PlugIn {
 	private ImageProcessor ref;
 	private ImageProcessor corr;
 	
-	private String dir = "/home/martin/BV3/CloudTracking/cloudFolder/"; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
+	private String dir = "/home/martin/BV3_2/CloudTracking/cloudFolder1/"; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
 	private String name = "cloud";
 	private String format = ".png";
 	
@@ -31,7 +28,7 @@ public class CloudTracking_ implements PlugIn {
 	private ArrayList<CloudPair> pairListCurrent;
 	private ArrayList<Cloud> correspondenceListPrevious;
 	
-	
+
 	private int numberOfImagesToProcess = new File(dir).listFiles().length - 1 ;
 	private int numOfIteration = 1;
 	
