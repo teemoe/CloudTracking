@@ -163,9 +163,13 @@ public class Tracking {
 		
 		//binärbild anzeigen
 		ImagePlus ipb=new ImagePlus("binary",binary);
-		//ipb.show();
+		ipb.show();
 	
-		int [] pixels = (int[]) binary.getPixels();
+//		int [] pixels = (int[]) binary.getPixels();
+
+		int[][] pixels2 = binary.getIntArray();
+		int[] pixels=ArrayConv.two2one(pixels2);
+		
 		
 		int length = pixels.length;
 		
