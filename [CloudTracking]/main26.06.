@@ -63,8 +63,8 @@ public class CloudTracking_ implements PlugIn {
 		
 		
 		// Ausgabe des binarisierten Bildes
-		new ImagePlus("ref", ref).show();
-		new ImagePlus("corr", corr).show();
+//		new ImagePlus("ref", ref).show();
+//		new ImagePlus("corr", corr).show();
 		
 		
 		// Wenn keine Bewegungsprognose aus der vorherigen Iteration vorhanden ist bzw. gleich Null ist,
