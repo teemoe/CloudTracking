@@ -5,6 +5,7 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import cloud.Cloud;
 import cloud.CloudPair;
@@ -17,7 +18,7 @@ public class Tracking {
 		
 		ArrayList<Cloud> currentCorrespondence = new ArrayList<Cloud>();
 		
-		int white = -1;
+		int white = 255;
 		int [] pixels = (int[]) binary.getPixels();
 		int length = pixels.length;
 		int binWidth  = binary.getWidth();
@@ -153,7 +154,7 @@ public class Tracking {
 		int minH=10;
 		int minA=150;
 		
-		int white = -1;
+		int white = 255;
 		int widthP = binary.getWidth();
 		int heightP = binary.getHeight();
 		//counter für grauwert der einzelnen wolken
@@ -167,8 +168,14 @@ public class Tracking {
 	
 //		int [] pixels = (int[]) binary.getPixels();
 
+		//bilder werden leer
+		binary.getPixels();
 		int[][] pixels2 = binary.getIntArray();
 		int[] pixels=ArrayConv.two2one(pixels2);
+		
+		Arrays.sort(pixels);
+		System.out.println("min." + pixels[0]);
+		System.out.println("max:" + pixels[pixels.length-1]);
 		
 		
 		int length = pixels.length;
