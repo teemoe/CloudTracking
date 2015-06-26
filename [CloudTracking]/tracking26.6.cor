@@ -227,7 +227,7 @@ public class Tracking {
 						int [] coordXY = fifo.remove(fifo.size()-1);
 								
 						//links		
-						if(coordXY[1] * widthP + coordXY[0] - 1 > 0 && coordXY[1] % widthP != 0){
+						if(coordXY[1] * widthP + coordXY[0] - 1 > 0 && coordXY[0] % widthP != 0){
 						
 							if(pixels[coordXY[1] * widthP + coordXY[0] - 1] == white && !marker[coordXY[1] * widthP + coordXY[0] - 1]){
 							
@@ -246,7 +246,7 @@ public class Tracking {
 						}
 						
 						//rechts
-						if(coordXY[1] * widthP + coordXY[0] + 1 < length && coordXY[1] % widthP != (widthP-1)){
+						if(coordXY[1] * widthP + coordXY[0] + 1 < length && coordXY[0] % widthP != (widthP-1)){
 						
 							if(pixels[coordXY[1] * widthP + coordXY[0] + 1]== white && !marker[coordXY[1] * widthP + coordXY[0] + 1]){
 							
@@ -264,7 +264,7 @@ public class Tracking {
 						}
 						
 						//oben
-						if((coordXY[1] - 1) * widthP + coordXY[0] > 0 && coordXY[0] != 0){
+						if((coordXY[1] - 1) * widthP + coordXY[0] > 0 && coordXY[1] != 0){
 						
 							if(pixels[(coordXY[1]-1) * widthP + coordXY[0]] == white && !marker[(coordXY[1]-1) * widthP + coordXY[0]]){
 							
@@ -281,7 +281,7 @@ public class Tracking {
 						}
 						
 						//unten !!Fehler??
-						if((coordXY[1] + 1) * widthP + coordXY[0] < length && coordXY[0] != (heightP-1)){
+						if((coordXY[1] + 1) * widthP + coordXY[0] < length && coordXY[1] != (heightP-1)){
 							
 							if(pixels[(coordXY[1]+1) * widthP + coordXY[0]] == white && !marker[(coordXY[1]+1) * widthP + coordXY[0]]){
 								
@@ -336,9 +336,9 @@ public class Tracking {
 						
 					}//wolken mit randkontakt ausschließen ende
 					
-//					schwarze löcher füllen
-						for(int i=minY;i<maxY;i++){
-						for(int j=minX; j<maxX; j++){
+//					schwarze löcher füllen/ bounding box zeichnen
+						for(int i=minY;i<=maxY;i++){
+						for(int j=minX; j<=maxX; j++){
 							marker[i*widthP+j]=true;
 							markerB[i*widthP+j]=-1;
 						}
