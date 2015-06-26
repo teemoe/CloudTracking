@@ -15,6 +15,7 @@ public class Tracking {
 
 	
 	public static ArrayList<Cloud> Tracking (ArrayList<CloudPair> ref, ImageProcessor binary, int numOfIteration){
+		System.out.println("Tracking" + numOfIteration);
 		
 		ArrayList<Cloud> currentCorrespondence = new ArrayList<Cloud>();
 		
@@ -146,7 +147,8 @@ public class Tracking {
 //	---------------------------------------------------------------------------------------------------------------
 
 	public static ArrayList<Cloud> startTracking(ImageProcessor binary, int numOfIteration){
-
+		System.out.println("startTracking" + numOfIteration);
+		
 		ArrayList<Cloud> cloudList = new ArrayList<Cloud>();
 		
 	//zu kleine wolken
@@ -173,9 +175,9 @@ public class Tracking {
 		int[][] pixels2 = binary.getIntArray();
 		int[] pixels=ArrayConv.two2one(pixels2);
 		
-		Arrays.sort(pixels);
-		System.out.println("min." + pixels[0]);
-		System.out.println("max:" + pixels[pixels.length-1]);
+		Arrays.sort(pixels);			// muss ausgeschaltet sein
+//		System.out.println("min." + pixels[0]);
+//		System.out.println("max:" + pixels[pixels.length-1]);
 		
 		
 		int length = pixels.length;
@@ -194,6 +196,7 @@ public class Tracking {
 				
 				//startpunkt gefunden
 				if(pixels[y*widthP + x] == white && !marker[y*widthP + x]){
+				System.out.println("Wolke gefunden");
 					
 					hueC+=10;
 					nC+=1;
@@ -210,9 +213,7 @@ public class Tracking {
 					
 					while(!fifo.isEmpty()){
 						
-						
-						
-						
+																	
 						int [] coordXY = fifo.remove(fifo.size()-1);
 								
 						//links		
@@ -295,9 +296,10 @@ public class Tracking {
 					
 
 					//geändert: wenn wolken zu klein sind, werden sie nicht hinzugefügt
-					if((tmp.getHeight() < minH || tmp.getWidth() < minW) && (tmp.getHeight()*tmp.getWidth()) < minA){
+					if((tmp.getHeight() > minH || tmp.getWidth() > minW) && (tmp.getHeight()*tmp.getWidth()) > minA){
 						cloudList.add(tmp);
 						System.out.println("wolke hinzugefügt");
+						tmp.printCloud();
 					}
 					
 					
@@ -309,8 +311,7 @@ public class Tracking {
 			
 		}//end find borders
 		
-		//resultat anzeigen   
-		
+			
 //		ImageProcessor ip= new ByteProcessor(widthP,heightP, show);
 //		ImagePlus imp =new ImagePlus("show",ip);
 //		imp.show();
