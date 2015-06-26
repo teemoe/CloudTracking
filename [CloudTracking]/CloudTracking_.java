@@ -1,9 +1,10 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import tracking.Tracking;
-import binary.Binarisierung;
-import binary.Erosion;
+//import binary.Binarisierung;
+//import binary.Erosion;
 import cloud.*;
 import ij.*;
 import ij.measure.ResultsTable;
@@ -17,9 +18,9 @@ public class CloudTracking_ implements PlugIn {
 	private ImageProcessor ref;
 	private ImageProcessor corr;
 	
-	private String dir = ""; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
+	private String dir = "/home/martin/BV3_2/CloudTracking/cloudFolder1/"; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
 	private String name = "cloud";
-	private String format = ".jpg";
+	private String format = ".png";
 	
 	private ArrayList<Cloud> referenceList;
 	private ArrayList<Cloud> correspondenceList;
@@ -27,7 +28,7 @@ public class CloudTracking_ implements PlugIn {
 	private ArrayList<CloudPair> pairListCurrent;
 	private ArrayList<Cloud> correspondenceListPrevious;
 	
-	
+
 	private int numberOfImagesToProcess = new File(dir).listFiles().length - 1 ;
 	private int numOfIteration = 1;
 	
@@ -36,7 +37,7 @@ public class CloudTracking_ implements PlugIn {
 		//Ueberpruefung der Bildanzahl im Ordner
 		//System.out.println(numberOfImagesToProcess);
 
-	while(numOfIteration <= numberOfImagesToProcess - 1){	
+	while(numOfIteration < numberOfImagesToProcess){	
 		
 		ImageStack cloudStack = loadImages();
 		
@@ -46,7 +47,7 @@ public class CloudTracking_ implements PlugIn {
 
 		
 		// an dieser Stelle erfolgt die Binarisierung des Stacks
-		makeBinaryStack(cloudStack);
+		//makeBinaryStack(cloudStack);
 		
 		// anschließend erodieren
 		//erodeBinaryStack(cloudStack);
@@ -56,37 +57,60 @@ public class CloudTracking_ implements PlugIn {
 		ref = cloudStack.getProcessor(1);
 		corr = cloudStack.getProcessor(2);
 		
+		//binarisierung
+		ref.autoThreshold();
+		corr.autoThreshold();
+		
 		
 		// Ausgabe des binarisierten Bildes
-		//new ImagePlus("ref", ref).show();
-		//new ImagePlus("corr", corr).show();
+//		new ImagePlus("ref", ref).show();
+//		new ImagePlus("corr", corr).show();
 		
 		
 		// Wenn keine Bewegungsprognose aus der vorherigen Iteration vorhanden ist bzw. gleich Null ist,
 		// wird die findBorders-Methode aufgerufen, welche jeweils eine List mit Cloud-Objekten zurück gibt.
 		if(pairListPrevious == null || pairListPrevious.size() == 0 || correspondenceListPrevious == null || correspondenceListPrevious.size() == 0){
 		
+		//referenceList = startTracking.startTracking(ref, numOfIteration);
+		//correspondenceList = startTracking.startTracking(corr, numOfIteration);
 		referenceList = Tracking.startTracking(ref, numOfIteration);
 		correspondenceList = Tracking.startTracking(corr, numOfIteration);
+		
+		pairListCurrent = findCloudPairs(referenceList, correspondenceList);
+		
 		}
 		
 		// Wenn Prognosen/Referenzdaten aus dem vorherigen Durchlauf vorhanden sind, dann wir das Tracking durchgeführt.
 		else{
-					
+			
+			
 			referenceList = correspondenceListPrevious;
-			correspondenceList = Tracking.Tracking(pairListPrevious, corr, numOfIteration);
-			//System.out.println("Das Tracking wurde benutzt");
+			
+			//test
+			correspondenceList = Tracking.startTracking(corr, numOfIteration);
+			pairListCurrent = findCloudPairs(referenceList, correspondenceList);
+			
+			
+//			correspondenceList = Tracking.Tracking(pairListPrevious, corr, numOfIteration);
+			
 		}
 		
+		//kontrollanzeige
+//		ImagePlus refShow = new ImagePlus("ref", ref);
+//		refShow.show();
+//		ImagePlus corrShow = new ImagePlus("crr", corr);
+//		corrShow.show();
 		
-		pairListCurrent = findCloudPairs(referenceList, correspondenceList);
+		//pairListCurrent = findCloudPairs(referenceList, correspondenceList);
+		//pairListCurrent = findCloudpairsStart.findCloudPairs(referenceList, correspondenceList, numOfIteration);
 		
 		
 		// Zeige den Bewegungsvektor im Referenz- bzw. Korrespondenzbild
-		
-		for(int i = 0; i < pairListCurrent.size(); i++){
-			pairListCurrent.get(i).showVec(ref);
-		}
+//		if(pairListCurrent.size()!=0){
+//		for(int i = 0; i < pairListCurrent.size(); i++){
+//			pairListCurrent.get(i).showVec(ref);
+//			System.out.println("leer");
+//		}}
 		
 		// Der ResultsTable wird am Ende des Durchlaufs die Wolke inkl. Prognose hinzugefügt und innerhalb von ImageJ als Auflistung angezeigt
 		// welche Methode hierzu benutzt wird, ist noch unklar, vielleicht muss diese noch implementiert werden
@@ -169,24 +193,107 @@ public class CloudTracking_ implements PlugIn {
 		tmp.setPixels(ref.getProcessor().getPixels(),1);
 		tmp.setPixels(corr.getProcessor().getPixels(),2);
 		
+		
 		return tmp;	
 	}
 		
-	private void makeBinaryStack(ImageStack cloudStack){
-		
-		cloudStack.setProcessor(
-				Binarisierung.binaryPicture(cloudStack.getProcessor(1)), 1);
-		cloudStack.setProcessor(
-				Binarisierung.binaryPicture(cloudStack.getProcessor(2)), 2);		
-	}
+//	private void makeBinaryStack(ImageStack cloudStack){
+//		
+//		cloudStack.setProcessor(
+//				Binarisierung.binaryPicture(cloudStack.getProcessor(1)), 1);
+//		cloudStack.setProcessor(
+//				Binarisierung.binaryPicture(cloudStack.getProcessor(2)), 2);		
+//	}
 	
-	private void erodeBinaryStack(ImageStack cloudStack){
-		Erosion.erode(cloudStack.getProcessor(1));
-		Erosion.erode(cloudStack.getProcessor(1));
-	}
+//	private void erodeBinaryStack(ImageStack cloudStack){
+//		Erosion.erode(cloudStack.getProcessor(1));
+//		Erosion.erode(cloudStack.getProcessor(1));
+//	}
 	
 	private ArrayList<CloudPair> findCloudPairs(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
 	
+	
+		byte th=4;//wieviele stellen im corr array werden getestet
+ 
+		
+		ArrayList<CloudPair> pairs = new ArrayList<CloudPair>();
+		
+		int sizeR=referenceList.size();
+		int sizeC=correspondenceList.size();
+		int dif=sizeR- sizeC;
+		
+		
+		Collections.sort(referenceList);
+		Collections.sort(correspondenceList);
+		
+				
+		//ref>cor
+		if(dif<0){
+			
+			for(int i = 0; i < referenceList.size(); i++){
+				Cloud ref = referenceList.get(i);
+				Cloud cor = correspondenceList.get(i);
+				double minDis=ref.getDist(correspondenceList.get(i));
+				
+			for(int j=0; j<correspondenceList.size(); j++){
+				
+				if(Math.abs(i-j)<=th){
+									
+							
+					if(ref.getDist(correspondenceList.get(j))<minDis){
+					minDis=ref.getDist(correspondenceList.get(j));
+					cor=correspondenceList.get(j);
+					}
+					
+					Vec2 tmp = ref.computeCenterDistance(cor);	
+						
+						CloudPair pairTmp = new CloudPair(ref, cor, tmp, numOfIteration);
+						pairs.add(pairTmp);
+					
+					
+				}//if
+			}//for
+			}//for
+			}//if
+			
+		
+		//ziel: richtige zuordnung der wolken ohne dopplung
+			//corr>ref
+		if(dif>=0){
+				
+				for(int i = 0; i < correspondenceList.size(); i++){
+					Cloud cor = correspondenceList.get(i);
+					Cloud ref = referenceList.get(i);
+					double minDis=cor.getDist(referenceList.get(i));
+					
+				for(int j=0; j<referenceList.size(); j++){
+					
+					if(Math.abs(i-j)<=th){
+										
+								
+						if(cor.getDist(referenceList.get(j))<minDis){
+						minDis=cor.getDist(referenceList.get(j));
+						ref=referenceList.get(j);
+						}
+						
+						Vec2 tmp = ref.computeCenterDistance(cor);	
+							
+							CloudPair pairTmp = new CloudPair(ref, cor, tmp, numOfIteration);
+							pairs.add(pairTmp);
+						
+						
+					}//if
+				}//for
+				}//for
+				
+			}
+		
+		return pairs;	
+	}
+	
+	private ArrayList<CloudPair> findCloudPairsAlt(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
+		System.out.println("findCloudPairs");
+		
 		ArrayList<CloudPair> pairs = new ArrayList<CloudPair>();
 		
 		for(int i = 0; i < referenceList.size(); i++){
@@ -197,12 +304,12 @@ public class CloudTracking_ implements PlugIn {
 				Cloud corr = correspondenceList.get(j);
 				if(ref.findMatchingCloud(corr)){
 					
-					Vec2 tmp = ref.computeCenterDistance(corr);
+					Vec2 v = ref.computeCenterDistance(corr);
 					
 					//System.out.println(tmp.getX());
 					//System.out.println(tmp.getY());
 					
-					CloudPair pairTmp = new CloudPair(ref, corr, tmp, numOfIteration);
+					CloudPair pairTmp = new CloudPair(ref, corr, v, numOfIteration);
 					pairs.add(pairTmp);
 				}
 			}	
