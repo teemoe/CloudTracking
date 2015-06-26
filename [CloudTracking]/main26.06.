@@ -37,7 +37,7 @@ public class CloudTracking_ implements PlugIn {
 		//Ueberpruefung der Bildanzahl im Ordner
 		//System.out.println(numberOfImagesToProcess);
 
-	while(numOfIteration < numberOfImagesToProcess){	
+	while(numOfIteration <= numberOfImagesToProcess){	
 		
 		ImageStack cloudStack = loadImages();
 		
