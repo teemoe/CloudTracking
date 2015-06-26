@@ -206,7 +206,7 @@ public class Tracking {
 				
 				//startpunkt gefunden
 				if(pixels[y*widthP + x] == white && !marker[y*widthP + x]){
-				System.out.println("Wolke gefunden" +  " X: " + x + " Y: " + y);	//passiert zu oft
+				System.out.println("Wolke gefunden" +  " X: " + x + " Y: " + y);	
 					
 					hueC+=10;
 					nC+=1;
