@@ -238,7 +238,7 @@ public class Tracking {
 									
 								//koordinaten zum markieren geändert
 								marker[coordXY[1] * widthP + coordXY[0] - 1] = true;
-//								markerB[coordXY[1] * widthP + coordXY[0] - 1] = -1;
+								markerB[coordXY[1] * widthP + coordXY[0] - 1] = -1;
 								show[coordXY[1] * widthP + coordXY[0]-1] = hueC;
 								}
 							 
@@ -258,7 +258,7 @@ public class Tracking {
 										
 								
 								marker[coordXY[1] * widthP + coordXY[0] + 1] = true;
-//								markerB[coordXY[1] * widthP + coordXY[0] + 1] = -1;
+								markerB[coordXY[1] * widthP + coordXY[0] + 1] = -1;
 								show[coordXY[1] * widthP + coordXY[0]+1] = hueC;
 								}
 						}
@@ -275,7 +275,7 @@ public class Tracking {
 									
 							
 								marker[(coordXY[1]-1) * widthP + coordXY[0]] = true;
-//								markerB[(coordXY[1]-1) * widthP + coordXY[0]] = -1;
+								markerB[(coordXY[1]-1) * widthP + coordXY[0]] = -1;
 								show[(coordXY[1]-1) * widthP + coordXY[0]] = hueC;
 								}
 						}
@@ -292,7 +292,7 @@ public class Tracking {
 									
 								
 								marker[coordXY[1]+1 * widthP + coordXY[0]] = true;
-//								markerB[coordXY[1]+1 * widthP + coordXY[0]] = -1;
+								markerB[coordXY[1]+1 * widthP + coordXY[0]] = -1;
 								show[coordXY[1]+1 * widthP + coordXY[0]] = hueC;
 								}
 						}
