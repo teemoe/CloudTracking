@@ -210,16 +210,19 @@ public class CloudTracking_ implements PlugIn {
 //		Erosion.erode(cloudStack.getProcessor(1));
 //	}
 	
-	private ArrayList<CloudPair> findCloudPairs(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
-	
+private ArrayList<CloudPair> findCloudPairs(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
 	
 		byte th=4;//wieviele stellen im corr array werden getestet
- 
+
 		
 		ArrayList<CloudPair> pairs = new ArrayList<CloudPair>();
 		
 		int sizeR=referenceList.size();
 		int sizeC=correspondenceList.size();
+		
+		System.out.println("ref size: " + sizeR);
+		System.out.println("corr size: " + sizeR);
+		
 		int dif=sizeR- sizeC;
 		
 		
@@ -231,6 +234,7 @@ public class CloudTracking_ implements PlugIn {
 		if(dif<0){
 			
 			for(int i = 0; i < referenceList.size(); i++){
+				
 				Cloud ref = referenceList.get(i);
 				Cloud cor = correspondenceList.get(i);
 				double minDis=ref.getDist(correspondenceList.get(i));
@@ -244,15 +248,15 @@ public class CloudTracking_ implements PlugIn {
 					minDis=ref.getDist(correspondenceList.get(j));
 					cor=correspondenceList.get(j);
 					}
-					
-					Vec2 tmp = ref.computeCenterDistance(cor);	
-						
-						CloudPair pairTmp = new CloudPair(ref, cor, tmp, numOfIteration);
-						pairs.add(pairTmp);
-					
+									
 					
 				}//if
 			}//for
+			
+			Vec2 tmp = ref.computeCenterDistance(cor);	
+						
+			CloudPair pairTmp = new CloudPair(ref, cor, tmp, numOfIteration);
+			pairs.add(pairTmp);					
 			}//for
 			}//if
 			
@@ -276,45 +280,21 @@ public class CloudTracking_ implements PlugIn {
 						ref=referenceList.get(j);
 						}
 						
-						Vec2 tmp = ref.computeCenterDistance(cor);	
-							
-							CloudPair pairTmp = new CloudPair(ref, cor, tmp, numOfIteration);
-							pairs.add(pairTmp);
+						
 						
 						
 					}//if
 				}//for
+				
+				Vec2 tmp = ref.computeCenterDistance(cor);	
+					
+				CloudPair pairTmp = new CloudPair(ref, cor, tmp, numOfIteration);
+				pairs.add(pairTmp);
 				}//for
 				
 			}
 		
-		return pairs;	
-	}
-	
-	private ArrayList<CloudPair> findCloudPairsAlt(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
-		System.out.println("findCloudPairs");
-		
-		ArrayList<CloudPair> pairs = new ArrayList<CloudPair>();
-		
-		for(int i = 0; i < referenceList.size(); i++){
-			
-			Cloud ref = referenceList.get(i);
-			for(int j = 0; j < correspondenceList.size(); j++){
-				
-				Cloud corr = correspondenceList.get(j);
-				if(ref.findMatchingCloud(corr)){
-					
-					Vec2 v = ref.computeCenterDistance(corr);
-					
-					//System.out.println(tmp.getX());
-					//System.out.println(tmp.getY());
-					
-					CloudPair pairTmp = new CloudPair(ref, corr, v, numOfIteration);
-					pairs.add(pairTmp);
-				}
-			}	
-		}
-		return pairs;	
+		return pairs;		
 	}
 	
 	
