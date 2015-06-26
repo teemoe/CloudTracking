@@ -297,4 +297,152 @@ public class Tracking {
 		
 		return cloudList;
 	}
+	
+	
+	public static ArrayList<Cloud> Tracking3 (ArrayList<CloudPair> ref, ImageProcessor binary, int numOfIteration){
+		
+		
+		ArrayList<Cloud> cloudList = new ArrayList<Cloud>();
+					
+		
+			
+			int white = -1;//255
+			int widthP = binary.getWidth();
+			int heightP = binary.getHeight();
+			byte counter=10;
+		
+			byte [] pixels = (byte[]) binary.getPixels();
+			byte [] show = new byte[widthP*heightP];
+			
+			int length = pixels.length;
+					
+			
+			// durchlaufe alle wolken
+			while (ref.size()!=0){
+			
+			CloudPair cp= ref.remove(ref.size()-1); //poll
+			Cloud c=cp.getCorrespondence();
+					
+			int height=c.getHeight();
+			int width=c.getWidth();
+			int x=c.getX();
+			int y=c.getY();
+			Vec2 motion=cp.getMotionVec();
+			int dirX = motion.getX();
+			int dirY = motion.getY();
+			int estimatedCenterX;
+			int estimatedCenterY;
+			
+			//noch zu tun:nähe zum rand prüfen?
+			
+			
+if(x + dirX + y + dirY * widthP >= 0 && x + dirX + y + dirY * widthP < length){
+				
+			estimatedCenterX = x + dirX;
+			estimatedCenterY = y + dirY;
+			
+if(pixels[estimatedCenterX + widthP * estimatedCenterY] != white){
+	continue; //raus aus dem durchlauf
+}	
+}
+
+
+			
+			int incrY=height/10;
+			int[]possibleY= new int[10];
+			for(int i=-5; i<5; i++){
+				possibleY[i]=y+i*incrY;
+			}
+			
+			int incrX=height/10;
+			int[]possibleX= new int[10];
+			for(int i=-5; i<5; i++){
+				possibleX[i]=x+i*incrX;
+			}
+			
+			
+			// spätere randpunkte
+			int minX=x, minY=y, maxX=x, maxY=y;
+			int minXtemp=x, minYtemp=y, maxXtemp=x, maxYtemp=y;
+			
+			// laufvariablen
+			int xl=x, xr=x, yu=y, yo=y;
+			
+			//x
+			for(int i=0; i<10; i++){
+			
+			y=possibleY[i];
+				
+			// teste wie lange vom mittelpunkt der alten wolke in jede richtung gegangen werden kann
+			while(pixels[y*widthP+xl]==white && pixels[y*widthP+xl]>0 && y*widthP+xl%widthP != 0){
+				xl=xl-1;
+				minXtemp=xl;
+				show[y*widthP+xl]=counter;
+			}
+			
+			while(pixels[y*widthP+xr]==white && pixels[y*widthP+xr]<widthP-1 && y*widthP+xr != (widthP-1)){
+				xr=xr+1;
+				maxXtemp=xr;
+				show[y*widthP+xr]=counter;
+			}
+			
+			if (minXtemp<minX)
+				minX=minXtemp;
+			
+			if (maxXtemp<maxX)
+				maxX=maxXtemp;
+			
+			}
+			
+			
+			//y
+			for(int i=0; i<10; i++){
+			
+				x=possibleX[i];
+				
+			
+			
+			while(pixels[yo*widthP+x]==white && pixels[y*widthP+xr]>0 && yo*widthP+x != 0){
+				yo=yo-1;
+				minY=yo;
+				show[yo*widthP+x]=counter;
+			}
+			
+			while(pixels[yu*widthP+x]==white && pixels[y*widthP+xr]<heightP-1 && yu*widthP+x != (widthP-1)){
+				yu=yu+1;
+				maxY=yu;
+				show[yu*widthP+x]=counter;
+			}
+			
+			if (minYtemp<minY)
+				minY=minYtemp;
+			
+			if (maxYtemp<maxY)
+				maxY=maxYtemp;
+			
+			}
+			
+			//neue wolke
+			x=(minX+maxX)/2;
+			y=(minY+maxY)/2;
+			width=maxX-minX;
+			height=maxY-minY;
+			
+			Cloud cn=new Cloud(x,y,width,height,numOfIteration);
+			
+			cloudList.add(cn);
+			
+			} // ende while
+			
+			
+			
+//			ImageProcessor ip= new ByteProcessor(widthP,heightP, show);
+//			ImagePlus imp =new ImagePlus("show",ip);
+//			imp.show();
+			
+			return cloudList;
+			
+		} // ende tracking
+	
+}
 }
