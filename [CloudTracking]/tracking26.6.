@@ -150,7 +150,8 @@ public class Tracking {
 		System.out.println("startTracking" + numOfIteration);
 		
 		ArrayList<Cloud> cloudList = new ArrayList<Cloud>();
-		
+//		int [] pixelsB = ArrayConv.getPix(binary);
+			
 	//zu kleine wolken
 		int minW=10;
 		int minH=10;
@@ -165,17 +166,25 @@ public class Tracking {
 		byte nC=0;
 		
 		//binärbild anzeigen
-		ImagePlus ipb=new ImagePlus("binary",binary);
-		ipb.show();
+//		ImagePlus ipb=new ImagePlus("binary",binary);
+//		ipb.show();
 	
-//		int [] pixels = (int[]) binary.getPixels();
+	
 
 		//bilder werden leer
 		binary.getPixels();
 		int[][] pixels2 = binary.getIntArray();
-		int[] pixels=ArrayConv.two2one(pixels2);
+//		int[] pixels=ArrayConv.two2oneI(pixels2);
+		byte[]pixels=ArrayConv.two2oneB(pixels2);
 		
-		Arrays.sort(pixels);			// muss ausgeschaltet sein
+		ImageProcessor ip= new ByteProcessor(widthP,heightP, pixels);
+		ImagePlus imp =new ImagePlus("binary",ip);
+		imp.show();
+		
+		
+		
+		
+//		Arrays.sort(pixels);			// muss ausgeschaltet sein
 //		System.out.println("min." + pixels[0]);
 //		System.out.println("max:" + pixels[pixels.length-1]);
 		
@@ -196,7 +205,7 @@ public class Tracking {
 				
 				//startpunkt gefunden
 				if(pixels[y*widthP + x] == white && !marker[y*widthP + x]){
-				System.out.println("Wolke gefunden");
+				System.out.println("Wolke gefunden" +  " X: " + x + " Y: " + y);
 					
 					hueC+=10;
 					nC+=1;
