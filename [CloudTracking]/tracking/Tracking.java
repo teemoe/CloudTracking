@@ -298,6 +298,7 @@ public class Tracking {
 		return cloudList;
 	}
 	
+	//---------------------------------------------------------------------------------------------------------------------------------------------------------------
 	
 	public static ArrayList<Cloud> Tracking3 (ArrayList<CloudPair> ref, ImageProcessor binary, int numOfIteration){
 		
@@ -351,13 +352,16 @@ if(pixels[estimatedCenterX + widthP * estimatedCenterY] != white){
 			int incrY=height/10;
 			int[]possibleY= new int[10];
 			for(int i=-5; i<5; i++){
-				possibleY[i]=y+i*incrY;
+				if(y+i*incrY>0 && y+i*incrY <heightP){
+				possibleY[i+5]=y+i*incrY;
+				}
 			}
 			
 			int incrX=height/10;
 			int[]possibleX= new int[10];
 			for(int i=-5; i<5; i++){
-				possibleX[i]=x+i*incrX;
+				if(x+i*incrX>0 && x+i*incrX <widthP)
+				possibleX[i+5]=x+i*incrX;
 			}
 			
 			
@@ -443,6 +447,4 @@ if(pixels[estimatedCenterX + widthP * estimatedCenterY] != white){
 			return cloudList;
 			
 		} // ende tracking
-	
-}
 }
