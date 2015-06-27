@@ -163,7 +163,7 @@ public class Tracking {
 		//counter für grauwert der einzelnen wolken
 		byte hueC=10;
 		//counter für nummerierung der wolken
-		byte nC=0;
+//		byte nC=0;
 		
 		//binärbild anzeigen
 //		ImagePlus ipb=new ImagePlus("binary",binary);
@@ -209,7 +209,7 @@ public class Tracking {
 				System.out.println("Wolke gefunden" +  " X: " + x + " Y: " + y);	
 					
 					hueC+=10;
-					nC+=1;
+//					nC+=1;
 					
 					int[] xy={x,y};
 					
@@ -233,7 +233,7 @@ public class Tracking {
 							
 								int[] xyO={coordXY[0],coordXY[1]-1};
 								fifo.add(xyO);
-								if(xyO[1] * widthP < minY)
+								if(xyO[1] < minY)
 									minY=xyO[1];
 															
 								marker[(coordXY[1]-1) * widthP + coordXY[0]] = true;
@@ -269,7 +269,7 @@ public class Tracking {
 								
 								int[] xyU={coordXY[0],coordXY[1]+1};
 								fifo.add(xyU);
-								if(xyU[1]* widthP > maxY)
+								if(xyU[1] > maxY)//
 									maxY=xyU[1];
 									
 								marker[(coordXY[1]+1) * widthP + coordXY[0]] = true;
@@ -307,14 +307,15 @@ public class Tracking {
 												
 					
 					//
-					centerX=minX + (maxX-minX)/2;
-					centerY= minY + (maxY-minY)/2;
 					cloudWidth=maxX-minX;
 					cloudHeight=maxY-minY;
+					centerX=minX + cloudWidth/2;
+					centerY= minY + cloudHeight/2;
+					
 					
 					
 					//wolken mit randkontakt ausschließen
-					if(minX!=0 && minY!=0 && maxX!=widthP && maxY!=heightP){
+					if(minX!=0 && minY!=0 && maxX!=widthP-1 && maxY!=heightP-1){
 						
 					Cloud tmp = new Cloud(centerX,centerY,cloudWidth,cloudHeight, numOfIteration);
 					
@@ -357,7 +358,8 @@ public class Tracking {
 //		ImageProcessor ip= new ByteProcessor(widthP,heightP, show);
 //		ImagePlus imp =new ImagePlus("show",ip);
 //		imp.show();
-		ImageProcessor ipmb= new ByteProcessor(widthP,heightP, markerB);
+		ImageProcessor ipmb= new ByteProcessor(widthP,heightP, markerB); 	//
+//		ImageProcessor ipmb= new ByteProcessor(widthP,heightP, show);
 		ImagePlus impmb =new ImagePlus("markerB",ipmb);
 		impmb.show();
 		
