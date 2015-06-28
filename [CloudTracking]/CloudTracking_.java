@@ -1,16 +1,21 @@
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.measure.ResultsTable;
+import ij.plugin.PlugIn;
+import ij.plugin.filter.Analyzer;
+import ij.process.ImageProcessor;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import tracking.Tracking;
+import binary.Binarisierung;
 //import binary.Binarisierung;
 //import binary.Erosion;
-import cloud.*;
-import ij.*;
-import ij.measure.ResultsTable;
-import ij.plugin.PlugIn;
-import ij.plugin.filter.Analyzer;
-import ij.process.ImageProcessor;
+import cloud.Cloud;
+import cloud.CloudPair;
+import cloud.Vec2;
 
 public class CloudTracking_ implements PlugIn {
 
@@ -47,7 +52,7 @@ public class CloudTracking_ implements PlugIn {
 
 		
 		// an dieser Stelle erfolgt die Binarisierung des Stacks
-		//makeBinaryStack(cloudStack);
+		makeBinaryStack(cloudStack);
 		
 		// anschließend erodieren
 		//erodeBinaryStack(cloudStack);
@@ -63,8 +68,8 @@ public class CloudTracking_ implements PlugIn {
 		
 		
 		// Ausgabe des binarisierten Bildes
-//		new ImagePlus("ref", ref).show();
-//		new ImagePlus("corr", corr).show();
+		new ImagePlus("ref", ref).show();
+		new ImagePlus("corr", corr).show();
 		
 		
 		// Wenn keine Bewegungsprognose aus der vorherigen Iteration vorhanden ist bzw. gleich Null ist,
@@ -197,13 +202,13 @@ public class CloudTracking_ implements PlugIn {
 		return tmp;	
 	}
 		
-//	private void makeBinaryStack(ImageStack cloudStack){
-//		
-//		cloudStack.setProcessor(
-//				Binarisierung.binaryPicture(cloudStack.getProcessor(1)), 1);
-//		cloudStack.setProcessor(
-//				Binarisierung.binaryPicture(cloudStack.getProcessor(2)), 2);		
-//	}
+	private void makeBinaryStack(ImageStack cloudStack){
+		
+		cloudStack.setProcessor(
+				Binarisierung.binaryPicture(cloudStack.getProcessor(1)), 1);
+		cloudStack.setProcessor(
+				Binarisierung.binaryPicture(cloudStack.getProcessor(2)), 2);		
+	}
 	
 //	private void erodeBinaryStack(ImageStack cloudStack){
 //		Erosion.erode(cloudStack.getProcessor(1));

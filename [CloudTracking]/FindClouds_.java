@@ -114,8 +114,8 @@ public class FindClouds_ implements PlugIn {
 		int white = -1;
 		int width = binary.getWidth();
 		int height = binary.getHeight();
-	
-		byte [] pixels = (byte[]) binary.getPixels();
+	// (short[], short[], float[] or int[]) 
+		int [] pixels = (int[]) binary.getPixels();
 		
 		int length = pixels.length;
 		
