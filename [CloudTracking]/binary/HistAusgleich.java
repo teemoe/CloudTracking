@@ -10,13 +10,13 @@ public class HistAusgleich {
 		int numberOfPixel = w * h;
 		int n = 256; //moegliche Werte
 
-		// compute the cumulative histogram:
+		// eigentlicher Ausgleich
 		int[] hist = picture.getHistogram();
 		for (int i = 1; i < hist.length; i++) {
 			hist[i] = hist[i - 1] + hist[i];
 		}
 
-		// equalize the image:
+		//Neues Bild
 		for (int j = 0; j < h; j++) {
 			for (int k = 0; k < w; k++) {
 				int a = picture.getPixel(k, j);
