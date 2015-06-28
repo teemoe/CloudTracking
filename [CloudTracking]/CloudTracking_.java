@@ -20,7 +20,7 @@ public class CloudTracking_ implements PlugIn {
 	
 	private String dir = "../combinationI/"; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
 	private String name = "cloud";
-	private String format = ".png";
+	private String format = ".jpg";
 	
 	private ArrayList<Cloud> referenceList;
 	private ArrayList<Cloud> correspondenceList;
