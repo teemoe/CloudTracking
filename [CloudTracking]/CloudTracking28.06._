@@ -22,7 +22,7 @@ public class CloudTracking_ implements PlugIn {
 	private ImageProcessor ref;
 	private ImageProcessor corr;
 	
-	private String dir = "C:/Users/martin-lenovo/Desktop/Studium_Local/BV3/CloudTracking/cloudFolderR4/"; 
+	private String dir = "C:/Users/martin-lenovo/Desktop/Studium_Local/BV3/CloudTracking/cloudFolderR15s/"; 
 	private String name = "cloud";
 	private String format = ".png";
 	
@@ -33,7 +33,7 @@ public class CloudTracking_ implements PlugIn {
 	private ArrayList<Cloud> correspondenceListPrevious;
 	
 	//falls bildfolge nicht bei 1 beginnt
-		private int startSwitch=5; //nummer des errsten bildes -1
+		private int startSwitch=0; //nummer des errsten bildes -1
 	
 	private int numberOfImagesToProcess = new File(dir).listFiles().length - 1 + startSwitch;
 	private int numOfIteration = 1 + startSwitch;
@@ -69,6 +69,7 @@ public class CloudTracking_ implements PlugIn {
 		//
 //		ref.autoThreshold();
 //		corr.autoThreshold();
+		//bei reale bildern einschalten
 		ref.invert();
 		corr.invert();
 		
@@ -105,9 +106,9 @@ public class CloudTracking_ implements PlugIn {
 		
 		// Zeige den Bewegungsvektor im Referenz- bzw. Korrespondenzbild
 		
-//		for(int i = 0; i < pairListCurrent.size(); i++){
-//			pairListCurrent.get(i).showVec(ref);
-//		}
+		for(int i = 0; i < pairListCurrent.size(); i++){
+			pairListCurrent.get(i).showVec(ref);
+		}
 		
 		// Der ResultsTable wird am Ende des Durchlaufs die Wolke inkl. Prognose hinzugefügt und innerhalb von ImageJ als Auflistung angezeigt
 		// welche Methode hierzu benutzt wird, ist noch unklar, vielleicht muss diese noch implementiert werden
@@ -229,7 +230,7 @@ public class CloudTracking_ implements PlugIn {
 	private ArrayList<CloudPair> findCloudPairs(ArrayList<Cloud> referenceList, ArrayList<Cloud> correspondenceList){
 	
 		byte th=4;//wieviele stellen im corr array werden getestet
-
+		float maxV=30f; //eventuel noch anpassen
 		
 		ArrayList<CloudPair> pairs = new ArrayList<CloudPair>();
 		
@@ -270,9 +271,11 @@ public class CloudTracking_ implements PlugIn {
 			}//for
 			
 			Vec2 tmp = ref.computeCenterDistance(cor);	
-						
+			
+			if(tmp.computeVectorLength()<maxV){
 			CloudPair pairTmp = new CloudPair(ref, cor, tmp, numOfIteration);
-			pairs.add(pairTmp);					
+			pairs.add(pairTmp);			
+			}//if
 			}//for
 			}//if
 			
@@ -303,9 +306,11 @@ public class CloudTracking_ implements PlugIn {
 				}//for
 				
 				Vec2 tmp = ref.computeCenterDistance(cor);	
-					
+				
+				if(tmp.computeVectorLength()<maxV){
 				CloudPair pairTmp = new CloudPair(ref, cor, tmp, numOfIteration);
 				pairs.add(pairTmp);
+				}//if
 				}//for
 				
 			}
