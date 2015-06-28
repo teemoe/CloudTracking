@@ -125,5 +125,9 @@ public class Cloud implements Comparable<Cloud> {
 	}
 
 
-	
+	public void printCloud (){
+		
+		System.out.println("X: " + this.getX() + " Y: " + this.getY() + " H: " + this.getHeight() + " W:" + this.getWidth());
+	}
+
 }
