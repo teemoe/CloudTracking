@@ -23,7 +23,9 @@ public class Tracking4 {
 	//zu kleine wolken -> empirisch ermitteln
 		int minW=50;
 		int minH=50;
-		int minA=2000;
+		int minA=3000;
+		
+		float thresholdSize=1.5f;
 		
 		int white = -1;
 		int widthP = binary.getWidth();
@@ -84,7 +86,7 @@ public class Tracking4 {
 			
 
 				
-				//geschätzter punkt ist in wolken -> schließen!
+				//geschätzter punkt ist in wolken
 				if(pixels[estimatedCenterY*widthP + estimatedCenterX] == white && !marker[y*widthP + estimatedCenterX]){
 				System.out.println("Wolke wieder gefunden" +  " X: " + estimatedCenterX + " Y: " + estimatedCenterY);	
 					
@@ -187,7 +189,8 @@ public class Tracking4 {
 					centerX=minX + cloudWidth/2;
 					centerY= minY + cloudHeight/2;
 					
-					
+					//kann das die vorherige wolke sein? teste größe
+					if(((cloudWidth*cloudHeight)/(height*width))<thresholdSize ){
 					
 					//wolken mit randkontakt ausschließen
 					if(minX!=0 && minY!=0 && maxX!=widthP-1 && maxY!=heightP-1){
@@ -210,7 +213,7 @@ public class Tracking4 {
 						}	
 					}//wolken zu klein						
 					}//wolken mit randkontakt ausschließen ende
-					
+					}//teste größe
 
 		}//ende wolke getrackt			
 		
