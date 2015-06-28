@@ -17,7 +17,7 @@ public class CloudTracking_ implements PlugIn {
 	private ImageProcessor ref;
 	private ImageProcessor corr;
 	
-	private String dir = ""; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
+	private String dir = "../combinationI/"; // Pfad zum Ordner, in dem die Aufnahmen der Wolken sind
 	private String name = "cloud";
 	private String format = ".jpg";
 	

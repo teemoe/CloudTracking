@@ -21,7 +21,7 @@ public class FindClouds_ implements PlugIn {
 	private ImageProcessor ref;
 	private ImageProcessor corr;
 	
-	private String dirWorkFolder = "/Users/boelf/Desktop/cloudFolder";
+	private String dirWorkFolder = "../combinationI/";
 
 	private ArrayList<Cloud> referenceList;
 	private ArrayList<Cloud> correspondenceList;

@@ -11,7 +11,7 @@ public class BinaryTester_ implements PlugIn {
 	private ImageProcessor ref;
 	private ImageProcessor corr;
 	
-	private String dir = "/Users/boelf/Desktop/combinationIII/";
+	private String dir = "../combinationI/";
 	private String name = "cloud";
 	private String format = ".jpg";
 	private int numOfIteration = 1;
@@ -70,7 +70,7 @@ public class BinaryTester_ implements PlugIn {
 		
 		tmp.setPixels(ref.getProcessor().getPixels(),1);
 		tmp.setPixels(corr.getProcessor().getPixels(),2);
-		
+						
 		return tmp;
 		
 	}
