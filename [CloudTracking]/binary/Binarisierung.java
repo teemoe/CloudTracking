@@ -47,10 +47,10 @@ public class Binarisierung {
 				if (HSBArray[i][j][1] < 0.3) {
 
 					//System.out.println("weiﬂ");
-					proc.putPixel(i, j, -1);
+					proc.setf(i, j, -1);
 				} else {
 					//System.out.println("schwarz");
-					proc.putPixel(i, j, 0);
+					proc.setf(i, j, 0);
 				}
 			}
 		}

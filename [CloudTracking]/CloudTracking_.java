@@ -63,13 +63,13 @@ public class CloudTracking_ implements PlugIn {
 		corr = cloudStack.getProcessor(2);
 		
 		//binarisierung
-		ref.autoThreshold();
-		corr.autoThreshold();
+//		ref.autoThreshold();
+//		corr.autoThreshold();
 		
 		
 		// Ausgabe des binarisierten Bildes
-		new ImagePlus("ref", ref).show();
-		new ImagePlus("corr", corr).show();
+		new ImagePlus("ref", ref.convertToByteProcessor()).show();
+		new ImagePlus("corr", corr.convertToByteProcessor()).show();
 		
 		
 		// Wenn keine Bewegungsprognose aus der vorherigen Iteration vorhanden ist bzw. gleich Null ist,

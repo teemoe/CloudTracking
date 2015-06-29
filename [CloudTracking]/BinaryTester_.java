@@ -1,4 +1,5 @@
 import binary.Binarisierung;
+import binary.HistAusgleich;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.PlugIn;
@@ -32,12 +33,8 @@ public class BinaryTester_ implements PlugIn {
 		
 		
 		// Ausgabe des binarisierten Bildes
-		new ImagePlus("ref", ref).show();
-		new ImagePlus("corr", corr).show();
-		
-		
-		
-		
+		new ImagePlus("ref", ref.convertToByteProcessor()).show();
+		new ImagePlus("corr", corr.convertToByteProcessor()).show();
 	}
 
 	
@@ -75,6 +72,12 @@ public class BinaryTester_ implements PlugIn {
 		
 	}
 
+	private void makeHistStack(ImageStack cloudStack){
+
+		cloudStack.setProcessor(HistAusgleich.run(cloudStack.getProcessor(1)), 1);
+		cloudStack.setProcessor(HistAusgleich.run(cloudStack.getProcessor(2)), 2);
+	}
+	
 	private void makeBinaryStack(ImageStack cloudStack){
 		
 		cloudStack.setProcessor(
