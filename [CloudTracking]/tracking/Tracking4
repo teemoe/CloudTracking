@@ -1,8 +1,10 @@
 package tracking;
 
 import ij.ImagePlus;
+import ij.plugin.LutLoader;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
+import ij.process.LUT;
 
 import java.util.ArrayList;
 
@@ -34,6 +36,8 @@ public class Tracking4 {
 		byte hueC=10;
 		//counter für nummerierung der wolken
 //		byte nC=0;
+		//counter für boundingbox farbton
+		byte bb=32;
 		
 		//binärbild anzeigen
 //		ImagePlus ipb=new ImagePlus("binary",binary);
@@ -208,9 +212,11 @@ public class Tracking4 {
 						for(int i=minY;i<=maxY;i++){
 						for(int j=minX; j<=maxX; j++){
 							marker[i*widthP+j]=true;
-							markerB[i*widthP+j]=-1;
+//							markerB[i*widthP+j]=-1; //weiße bounding box
+							markerB[i*widthP+j]=bb;
 						}
-						}	
+						}
+						bb+=32;
 					}//wolken zu klein						
 					}//wolken mit randkontakt ausschließen ende
 					}//teste größe
@@ -219,18 +225,20 @@ public class Tracking4 {
 		
 		}//end find borders? -> ende while ref.isempty?
 		
-			
-//		ImageProcessor ip= new ByteProcessor(widthP,heightP, show);
-//		ImagePlus imp =new ImagePlus("show",ip);
-//		imp.show();
+		//wolken mit untersch grautönen darstellen	
+//		ImageProcessor ipS= new ByteProcessor(widthP,heightP, show);
+//		ImagePlus impS =new ImagePlus("show",ipS);
+//		impS.show();
+		
 		ImageProcessor ipmb= new ByteProcessor(widthP,heightP, markerB); 	//
 //		ImageProcessor ipmb= new ByteProcessor(widthP,heightP, show);
-		ImagePlus impmb =new ImagePlus("markerB",ipmb);
-		impmb.show();
+//		ImagePlus impmb =new ImagePlus("markerB",ipmb);
+//		impmb.show();
 		
-		//falschfarbendarstellung für unterschiedliche wolken
-		//LUT lut= woher bekommt ma sie
-		//ipmb.setLut(lut);
+		LUT lut1=LutLoader.openLut("C:/Users/martin-lenovo/Desktop/Studium_Local/BV3/CloudTracking/LUTs/Green_Fire_Blue.lut");	
+		ipmb.setLut(lut1);
+		ImagePlus impmbL =new ImagePlus("TrackedCloud",ipmb);
+		impmbL.show();
 		
 		return cloudList;
 	}//ende tracking4
