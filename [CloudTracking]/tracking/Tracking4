@@ -1,0 +1,240 @@
+package tracking;
+
+import ij.ImagePlus;
+import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
+
+import java.util.ArrayList;
+
+import cloud.Cloud;
+import cloud.CloudPair;
+import cloud.Vec2;
+
+public class Tracking4 {
+
+	
+	
+	public static ArrayList<Cloud> Tracking4(ArrayList<CloudPair> ref, ImageProcessor binary, int numOfIteration){
+		System.out.println("startTracking" + numOfIteration);
+		
+		ArrayList<Cloud> cloudList = new ArrayList<Cloud>();
+
+			
+	//zu kleine wolken -> empirisch ermitteln
+		int minW=50;
+		int minH=50;
+		int minA=3000;
+		
+		float thresholdSize=1.2f;
+		
+		int white = -1;
+		int widthP = binary.getWidth();
+		int heightP = binary.getHeight();
+		//counter für grauwert der einzelnen wolken
+		byte hueC=10;
+		//counter für nummerierung der wolken
+//		byte nC=0;
+		
+		//binärbild anzeigen
+//		ImagePlus ipb=new ImagePlus("binary",binary);
+//		ipb.show();
+	
+	
+
+		byte[] pixelB= (byte[])binary.getPixels();
+		int[][] pixels2 = binary.getIntArray();
+
+		byte[]pixels=ArrayConv.two2oneB(pixels2);
+		
+		ImageProcessor ip= new ByteProcessor(widthP,heightP, pixelB);
+		ImagePlus imp =new ImagePlus("binary",ip);
+		imp.show();
+		
+		pixels=pixelB;
+		
+
+		
+		int length = pixels.length;
+		
+		//merkerbild
+		boolean [] marker = new boolean[pixels.length];
+		byte [] markerB =new byte[length]; 
+		//kontrollbild zur anzeige
+		byte [] show = new byte[length];
+		
+		
+		ArrayList <int[]> fifo = new ArrayList<int[]>();
+		
+		// durchlaufe alle wolken
+		while (ref.size()!=0){//muss noch geschlossen werden?
+					
+					CloudPair cp= ref.remove(ref.size()-1); //poll
+					Cloud c=cp.getCorrespondence();
+							
+					int height=c.getHeight();
+					int width=c.getWidth();
+					int x=c.getX();
+					int y=c.getY();
+					Vec2 motion=cp.getMotionVec();
+					int dirX = motion.getX();
+					int dirY = motion.getY();
+					int estimatedCenterX = x + dirX;
+					int estimatedCenterY = y + dirX;
+					
+					
+					
+			
+
+				
+				//geschätzter punkt ist in wolken
+				if(pixels[estimatedCenterY*widthP + estimatedCenterX] == white && !marker[y*widthP + estimatedCenterX]){
+				System.out.println("Wolke wieder gefunden" +  " X: " + estimatedCenterX + " Y: " + estimatedCenterY);	
+					
+					hueC+=10;
+
+					
+					int[] xy={estimatedCenterX,estimatedCenterY};
+					
+					int centerX = 0, centerY = 0, cloudWidth = 0, cloudHeight = 0;
+					int minX = estimatedCenterX, minY = estimatedCenterY, maxX = estimatedCenterX, maxY = estimatedCenterY;
+					
+					fifo.add(xy);
+					
+					marker[estimatedCenterY * widthP + estimatedCenterX] = true;
+					show[estimatedCenterY * widthP + estimatedCenterX] = hueC;
+					
+					while(!fifo.isEmpty()){
+						
+																	
+						int [] coordXY = fifo.remove(fifo.size()-1);
+						
+						//oben
+						if((coordXY[1] - 1) * widthP + coordXY[0] > 0 && coordXY[1] != 0){
+						
+							if(pixels[(coordXY[1]-1) * widthP + coordXY[0]] == white && !marker[(coordXY[1]-1) * widthP + coordXY[0]]){
+							
+								int[] xyO={coordXY[0],coordXY[1]-1};
+								fifo.add(xyO);
+								if(xyO[1] < minY)
+									minY=xyO[1];
+															
+								marker[(coordXY[1]-1) * widthP + coordXY[0]] = true;
+								markerB[(coordXY[1]-1) * widthP + coordXY[0]] = -1;
+								show[(coordXY[1]-1) * widthP + coordXY[0]] = hueC;
+								}
+						}
+							
+						
+						//rechts 
+						if(coordXY[1] * widthP + coordXY[0] + 1 < length && coordXY[0] % widthP != (widthP-1)){
+						
+							if(pixels[coordXY[1] * widthP + coordXY[0] + 1]== white && !marker[coordXY[1] * widthP + coordXY[0] + 1]){
+							
+								int[] xyR={coordXY[0] + 1, coordXY[1]};
+								fifo.add(xyR);
+								if(xyR[0]>maxX)
+									maxX=xyR[0];
+									
+										
+								marker[coordXY[1] * widthP + coordXY[0] + 1] = true;
+								markerB[coordXY[1] * widthP + coordXY[0] + 1] = -1;
+								show[coordXY[1] * widthP + coordXY[0]+1] = hueC;
+								}
+						}
+						
+						
+						
+						//unten 
+						if((coordXY[1] + 1) * widthP + coordXY[0] < length && coordXY[1] != (heightP-1)){
+							
+							if(pixels[(coordXY[1]+1) * widthP + coordXY[0]] == white && !marker[(coordXY[1]+1) * widthP + coordXY[0]]){
+								
+								int[] xyU={coordXY[0],coordXY[1]+1};
+								fifo.add(xyU);
+								if(xyU[1] > maxY)//
+									maxY=xyU[1];
+									
+								marker[(coordXY[1]+1) * widthP + coordXY[0]] = true;
+								markerB[(coordXY[1]+1) * widthP + coordXY[0]] = -1;
+								show[(coordXY[1]+1) * widthP + coordXY[0]] = hueC;
+								}
+						}
+							
+						
+								
+											
+						//links		
+						if(coordXY[1] * widthP + coordXY[0] - 1 > 0 && coordXY[0] % widthP != 0){
+						
+							if(pixels[coordXY[1] * widthP + coordXY[0] - 1] == white && !marker[coordXY[1] * widthP + coordXY[0] - 1]){
+							
+								int[] xyL={coordXY[0] - 1,coordXY[1]};
+								fifo.add(xyL);
+								if(xyL[0]<minX)
+									minX=xyL[0];
+									
+								marker[coordXY[1] * widthP + coordXY[0] - 1] = true;
+								markerB[coordXY[1] * widthP + coordXY[0] - 1] = -1;
+								show[coordXY[1] * widthP + coordXY[0]-1] = hueC;
+								}										 
+						}	
+									
+				
+
+					}//end while floodfill
+					
+												
+					cloudWidth=maxX-minX;
+					cloudHeight=maxY-minY;
+					centerX=minX + cloudWidth/2;
+					centerY= minY + cloudHeight/2;
+					
+					//kann das die vorherige wolke sein? teste größe
+					if(((cloudWidth*cloudHeight)/(height*width))<thresholdSize ){
+					
+					//wolken mit randkontakt ausschließen
+					if(minX!=0 && minY!=0 && maxX!=widthP-1 && maxY!=heightP-1){
+						
+					Cloud tmp = new Cloud(centerX,centerY,cloudWidth,cloudHeight, numOfIteration);
+					
+					
+					//geändert: wenn wolken zu klein sind, werden sie nicht hinzugefügt
+					if((tmp.getHeight() > minH || tmp.getWidth() > minW) && (tmp.getHeight()*tmp.getWidth()) > minA){
+						cloudList.add(tmp);
+						System.out.println("wolke hinzugefügt");
+						tmp.printCloud();
+						
+					//schwarze löcher füllen/ bounding box zeichnen
+						for(int i=minY;i<=maxY;i++){
+						for(int j=minX; j<=maxX; j++){
+							marker[i*widthP+j]=true;
+							markerB[i*widthP+j]=-1;
+						}
+						}	
+					}//wolken zu klein						
+					}//wolken mit randkontakt ausschließen ende
+					}//teste größe
+
+		}//ende wolke getrackt			
+		
+		}//end find borders? -> ende while ref.isempty?
+		
+			
+//		ImageProcessor ip= new ByteProcessor(widthP,heightP, show);
+//		ImagePlus imp =new ImagePlus("show",ip);
+//		imp.show();
+		ImageProcessor ipmb= new ByteProcessor(widthP,heightP, markerB); 	//
+//		ImageProcessor ipmb= new ByteProcessor(widthP,heightP, show);
+		ImagePlus impmb =new ImagePlus("markerB",ipmb);
+		impmb.show();
+		
+		//falschfarbendarstellung für unterschiedliche wolken
+		//LUT lut= woher bekommt ma sie
+		//ipmb.setLut(lut);
+		
+		return cloudList;
+	}//ende tracking4
+	
+	
+	
+}//ende klasse
