@@ -1,5 +1,7 @@
 package binary;
 
+import ij.ImagePlus;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 
 import java.awt.Color;
@@ -39,14 +41,45 @@ public class Binarisierung {
 
 		float[][][] HSBArray = RGBToHSB.pixelArray(colorImage);
 
+		
+		
+		/*Histogrammausgleich
+		ImageProcessor HistProcessor = new ColorProcessor(HSBArray.length, HSBArray[0].length);
+		for ( int x = 0; x < HSBArray.length; x++){
+			for(int y = 0; y < HSBArray[0].length; y ++){
+			
+				HistProcessor.setf(x, y, HSBArray[x][y][0]);
+			}
+		}
+		
+		new ImagePlus("Brightness", HistProcessor.convertToByteProcessor()).show();
+		
+		HistProcessor = HistAusgleich.run(HistProcessor);
+		
+		for ( int x = 0; x < HSBArray.length; x++){
+			for(int y = 0; y < HSBArray[0].length; y ++){
+			 
+				HSBArray[x][y][0] = HistProcessor.getf(x, y);
+			}
+		}
+		
+		//Ausgabe des Histogrammausgeliches auf Brightness
+		new ImagePlus("HistBrightness", HistProcessor.convertToByteProcessor()).show();
+		*/
+		
+		
 		// Binarisierung
 		for (int i = 0; i < HSBArray.length; i++) {
 			for (int j = 0; j < HSBArray[i].length; j++) {
 
 				// Testen auf nicht Himmel (Wolke)
-				if (HSBArray[i][j][1] < 0.3) {
-
-					//System.out.println("weiﬂ");
+				
+				//Mit Histogrammausgleich
+				//if (HSBArray[i][j][1] < 0.3 && HSBArray[i][j][0] < 200) {
+				
+				if (HSBArray[i][j][1] < 0.3){
+					
+					//System.out.println("weiss");
 					proc.setf(i, j, -1);
 				} else {
 					//System.out.println("schwarz");
