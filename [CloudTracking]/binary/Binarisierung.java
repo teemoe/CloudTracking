@@ -77,7 +77,7 @@ public class Binarisierung {
 				//Mit Histogrammausgleich
 				//if (HSBArray[i][j][1] < 0.3 && HSBArray[i][j][0] < 200) {
 				
-				if (HSBArray[i][j][1] < 0.3){
+				if (HSBArray[i][j][1] < 0.2){
 					
 					//System.out.println("weiss");
 					proc.setf(i, j, -1);
