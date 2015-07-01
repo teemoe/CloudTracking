@@ -75,9 +75,9 @@ public class Binarisierung {
 				// Testen auf nicht Himmel (Wolke)
 				
 				//Mit Histogrammausgleich
-				//if (HSBArray[i][j][1] < 0.3 && HSBArray[i][j][0] < 200) {
+				if (HSBArray[i][j][1] < 0.3 && HSBArray[i][j][0] < 180) {
 				
-				if (HSBArray[i][j][1] < 0.2){
+				//if (HSBArray[i][j][1] < 0.2){
 					
 					//System.out.println("weiss");
 					proc.setf(i, j, -1);
