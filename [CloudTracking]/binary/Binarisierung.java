@@ -42,8 +42,8 @@ public class Binarisierung {
 		float[][][] HSBArray = RGBToHSB.pixelArray(colorImage);
 
 		
-		
-		/*Histogrammausgleich
+		/*
+		//Histogrammausgleich
 		ImageProcessor HistProcessor = new ColorProcessor(HSBArray.length, HSBArray[0].length);
 		for ( int x = 0; x < HSBArray.length; x++){
 			for(int y = 0; y < HSBArray[0].length; y ++){
@@ -52,7 +52,7 @@ public class Binarisierung {
 			}
 		}
 		
-		new ImagePlus("Brightness", HistProcessor.convertToByteProcessor()).show();
+		new ImagePlus("Hue", HistProcessor.convertToByteProcessor()).show();
 		
 		HistProcessor = HistAusgleich.run(HistProcessor);
 		
@@ -64,7 +64,7 @@ public class Binarisierung {
 		}
 		
 		//Ausgabe des Histogrammausgeliches auf Brightness
-		new ImagePlus("HistBrightness", HistProcessor.convertToByteProcessor()).show();
+		new ImagePlus("HistHue", HistProcessor.convertToByteProcessor()).show();
 		*/
 		
 		
@@ -74,10 +74,11 @@ public class Binarisierung {
 
 				// Testen auf nicht Himmel (Wolke)
 				
-				//Mit Histogrammausgleich
+				//Ohne Histogrammausgleich
 				if (HSBArray[i][j][1] < 0.3 && HSBArray[i][j][0] < 180) {
 				
-				//if (HSBArray[i][j][1] < 0.2){
+				//Mit Histogrammausgleich WICHTIG: Hierzu müssen die Zeilen 45 bis 68 einkommeniert sein
+				//if (HSBArray[i][j][1] < 0.6 && HSBArray [i][j][0] < 20){
 					
 					//System.out.println("weiss");
 					proc.setf(i, j, -1);
